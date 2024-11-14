@@ -1,0 +1,14 @@
+D:\ConsoleChat\Client\obj\Debug\net8.0\ConsoleChat.GeneratedMSBuildEditorConfig.editorconfig
+D:\ConsoleChat\Client\obj\Debug\net8.0\ConsoleChat.AssemblyInfoInputs.cache
+D:\ConsoleChat\Client\obj\Debug\net8.0\ConsoleChat.AssemblyInfo.cs
+D:\ConsoleChat\Client\obj\Debug\net8.0\ConsoleChat.csproj.CoreCompileInputs.cache
+D:\ConsoleChat\Client\bin\Debug\net8.0\ConsoleChat.exe
+D:\ConsoleChat\Client\bin\Debug\net8.0\ConsoleChat.deps.json
+D:\ConsoleChat\Client\bin\Debug\net8.0\ConsoleChat.runtimeconfig.json
+D:\ConsoleChat\Client\bin\Debug\net8.0\ConsoleChat.dll
+D:\ConsoleChat\Client\bin\Debug\net8.0\ConsoleChat.pdb
+D:\ConsoleChat\Client\obj\Debug\net8.0\ConsoleChat.dll
+D:\ConsoleChat\Client\obj\Debug\net8.0\refint\ConsoleChat.dll
+D:\ConsoleChat\Client\obj\Debug\net8.0\ConsoleChat.pdb
+D:\ConsoleChat\Client\obj\Debug\net8.0\ConsoleChat.genruntimeconfig.cache
+D:\ConsoleChat\Client\obj\Debug\net8.0\ref\ConsoleChat.dll
