@@ -12,3 +12,4 @@ D:\ConsoleChat\Client\obj\Debug\net8.0\refint\ConsoleChat.dll
 D:\ConsoleChat\Client\obj\Debug\net8.0\ConsoleChat.pdb
 D:\ConsoleChat\Client\obj\Debug\net8.0\ConsoleChat.genruntimeconfig.cache
 D:\ConsoleChat\Client\obj\Debug\net8.0\ref\ConsoleChat.dll
+D:\ConsoleChat\Client\obj\Debug\net8.0\ConsoleChat.sourcelink.json

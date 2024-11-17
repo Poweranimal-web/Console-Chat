@@ -40,10 +40,12 @@ namespace client
             return 0;
         }
         public void SendMessageToChannel(){
-
-            byte[] response = Encoding.Default.GetBytes("Hello world");
-            Console.WriteLine(response.Length);
-            clientSocket.Send(response, response.Length, SocketFlags.None);
+            while(true){
+                string message = Console.ReadLine();
+                byte[] response = Encoding.Default.GetBytes(message);
+                clientSocket.Send(response, response.Length, SocketFlags.None);
+                continue;
+            }
         }
         public void RecieveMessage(){
 

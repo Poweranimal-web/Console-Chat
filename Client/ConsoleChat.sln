@@ -5,6 +5,8 @@ VisualStudioVersion = 17.5.002.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConsoleChat", "ConsoleChat.csproj", "{606FC634-241F-4F93-8038-2822EB504D02}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Server", "..\Server\Server.csproj", "{2D35BC72-191F-4A57-A541-8C5FFAE2A058}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{606FC634-241F-4F93-8038-2822EB504D02}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{606FC634-241F-4F93-8038-2822EB504D02}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{606FC634-241F-4F93-8038-2822EB504D02}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2D35BC72-191F-4A57-A541-8C5FFAE2A058}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2D35BC72-191F-4A57-A541-8C5FFAE2A058}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2D35BC72-191F-4A57-A541-8C5FFAE2A058}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2D35BC72-191F-4A57-A541-8C5FFAE2A058}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
