@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "d:\\ConsoleChat\\Server\\Server.csproj": {}
+    "D:\\ConsoleChat\\Server\\Server.csproj": {}
   },
   "projects": {
-    "d:\\ConsoleChat\\Server\\Server.csproj": {
+    "D:\\ConsoleChat\\Server\\Server.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "d:\\ConsoleChat\\Server\\Server.csproj",
+        "projectUniqueName": "D:\\ConsoleChat\\Server\\Server.csproj",
         "projectName": "Server",
-        "projectPath": "d:\\ConsoleChat\\Server\\Server.csproj",
+        "projectPath": "D:\\ConsoleChat\\Server\\Server.csproj",
         "packagesPath": "C:\\Users\\Nikita\\.nuget\\packages\\",
-        "outputPath": "d:\\ConsoleChat\\Server\\obj\\",
+        "outputPath": "D:\\ConsoleChat\\Server\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\Nikita\\AppData\\Roaming\\NuGet\\NuGet.Config"
