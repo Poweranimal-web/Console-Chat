@@ -3,6 +3,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
+using Storage;
 namespace client
 {
     interface INetworkClient
@@ -20,12 +21,12 @@ namespace client
         IPAddress Host;
         IPEndPoint endpoint; 
         Socket clientSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp); 
-        object? locker = new();
         Thread receiveMessageThread;
         ManualResetEvent allDone = new ManualResetEvent(false);
         byte[] buffer = new byte[1024];
         ConnectMessage? Message = null;
-        string? nameOwnEndpoint;
+        StringBuilder? nameOwnEndpoint;
+        StringBuilder channelCurrent = new StringBuilder();
         public ChatClient(string host, int port){
             
             IPAddress.TryParse(host, out Host);
@@ -58,9 +59,10 @@ namespace client
         }
         public void SendMessageToChannel(){
             while(true){
-                string message = Console.ReadLine();
-                string channel = Console.ReadLine();
-                ConnectMessage newMessage = new ConnectMessage(){status="MESSAGE", channel=channel, message=message, sender=nameOwnEndpoint};
+                Console.Write("Enter message: ");
+                StringBuilder message = new StringBuilder(Console.ReadLine());
+                ConnectMessage newMessage = new ConnectMessage(){status="MESSAGE", channel=channelCurrent.ToString(), 
+                message=message.ToString(), sender=nameOwnEndpoint.ToString()};
                 byte[] response = Encoding.Default.GetBytes(JsonSerializer.Serialize(newMessage));
                 clientSocket.Send(response, response.Length, SocketFlags.None);
                 continue;
@@ -69,8 +71,8 @@ namespace client
         public void ConnectToServer(){
             
             Console.Write("Enter name of room: ");
-            nameOwnEndpoint = Console.ReadLine();
-            ConnectMessage message = new ConnectMessage(){status="CONNECT", channel=nameOwnEndpoint};
+            nameOwnEndpoint = new StringBuilder(Console.ReadLine());
+            ConnectMessage message = new ConnectMessage(){status="CONNECT", channel=nameOwnEndpoint.ToString()};
             Console.WriteLine(JsonSerializer.Serialize(message));
             byte[] response = Encoding.Default.GetBytes(JsonSerializer.Serialize(message));
             clientSocket.Send(response, response.Length, SocketFlags.None);
