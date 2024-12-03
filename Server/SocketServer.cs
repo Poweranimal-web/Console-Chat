@@ -76,7 +76,7 @@ namespace server
         void AddNewConnection(Socket client, ConnectMessage message){
             connections[message.channel] = client;
             ConnectMessage answer = new ConnectMessage(){status="OK"};
-            client.Send(Encoding.Default.GetBytes(JsonSerializer.Serialize(answer))); 
+            client.Send(Encoding.Unicode.GetBytes(JsonSerializer.Serialize(answer))); 
         }
         void RecieveCallBack(IAsyncResult ar){
             // Retrieve the state object and the handler socket
@@ -85,12 +85,12 @@ namespace server
             Socket handler = state.workSocket;
             int bytesRead = handler.EndReceive(ar);
             if (bytesRead > 0){
-                ConnectMessage message = JsonSerializer.Deserialize<ConnectMessage>(Encoding.Default.GetString(state.buffer,0,bytesRead));
+                ConnectMessage message = JsonSerializer.Deserialize<ConnectMessage>(Encoding.Unicode.GetString(state.buffer,0,bytesRead));
                 if (message.status.Equals("CONNECT")){
                     AddNewConnection(handler, message);
                 }
                 else if(message.status.Equals("MESSAGE")){
-                    connections[message.channel].Send(Encoding.Default.GetBytes(JsonSerializer.Serialize(message)));
+                    connections[message.channel].Send(Encoding.Unicode.GetBytes(JsonSerializer.Serialize(message)));
                 }
                 handler.BeginReceive(state.buffer,0,state.buffer.Length,0, new AsyncCallback(RecieveCallBack), state);
             }

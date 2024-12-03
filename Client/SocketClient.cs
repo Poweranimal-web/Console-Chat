@@ -2,8 +2,8 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Text.Json;
-using System.Threading;
 using Storage;
+using ConsoleControl;
 namespace client
 {
     interface INetworkClient
@@ -25,8 +25,12 @@ namespace client
         ManualResetEvent allDone = new ManualResetEvent(false);
         byte[] buffer = new byte[1024];
         ConnectMessage? Message = null;
+        StringBuilder? textMessage = null;
         StringBuilder? nameOwnEndpoint;
         StringBuilder channelCurrent = new StringBuilder();
+        ChatsStorage chatsStorage = new ChatsStorage();
+        RenderListChats renderListChats = new RenderListChats(); 
+        Command command = new Command();
         public ChatClient(string host, int port){
             
             IPAddress.TryParse(host, out Host);
@@ -58,40 +62,32 @@ namespace client
             return 0;
         }
         public void SendMessageToChannel(){
-            while(true){
-                Console.Write("Enter message: ");
-                StringBuilder message = new StringBuilder(Console.ReadLine());
-                ConnectMessage newMessage = new ConnectMessage(){status="MESSAGE", channel=channelCurrent.ToString(), 
-                message=message.ToString(), sender=nameOwnEndpoint.ToString()};
-                byte[] response = Encoding.Default.GetBytes(JsonSerializer.Serialize(newMessage));
-                clientSocket.Send(response, response.Length, SocketFlags.None);
-                continue;
-            }
+            ConnectMessage newMessage = new ConnectMessage(){status="MESSAGE", channel=channelCurrent.ToString(), 
+            message=textMessage.ToString(), sender=nameOwnEndpoint.ToString()};
+            byte[] response = Encoding.Unicode.GetBytes(JsonSerializer.Serialize(newMessage));
+            clientSocket.Send(response, response.Length, SocketFlags.None);    
         }
         public void ConnectToServer(){
-            
-            Console.Write("Enter name of room: ");
+            // renderListChats.RenderChats((Dictionary<string, Chat>)chatsStorage.ReadAllRecords());
+            Console.Write("Enter your name of channel: ");
             nameOwnEndpoint = new StringBuilder(Console.ReadLine());
             ConnectMessage message = new ConnectMessage(){status="CONNECT", channel=nameOwnEndpoint.ToString()};
-            Console.WriteLine(JsonSerializer.Serialize(message));
-            byte[] response = Encoding.Default.GetBytes(JsonSerializer.Serialize(message));
+            byte[] response = Encoding.Unicode.GetBytes(JsonSerializer.Serialize(message));
             clientSocket.Send(response, response.Length, SocketFlags.None);
             Console.WriteLine("Wait...");
             allDone.WaitOne();
             if (Message is not null && Message.status.Equals("OK")){
                 Console.WriteLine("Launched");
-                SendMessageToChannel();
+                command.RunConsole(ref clientSocket, ref textMessage, ref channelCurrent, chatsStorage, this);
             }
             
         }
         public void RecieveMessage(){
-            
             while(true){
                     int dataLength = clientSocket.Receive(buffer);
-                    Message = JsonSerializer.Deserialize<ConnectMessage>(Encoding.Default.GetString(buffer,0,dataLength));
-                    Console.WriteLine(Encoding.Default.GetString(buffer,0,dataLength));
+                    Message = JsonSerializer.Deserialize<ConnectMessage>(Encoding.Unicode.GetString(buffer,0,dataLength));
                     if (dataLength > 0 && Message.status.Equals("MESSAGE")){
-                        Console.WriteLine($"{Message.sender}:{Message.message}");
+                        Console.WriteLine($"{Message.sender}:{Message.message}\n");
                     }
                     else{
                         allDone.Set();

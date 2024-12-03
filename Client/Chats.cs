@@ -4,7 +4,7 @@ namespace Storage{
     interface IStorage{
         void AddRecord(string name,object record);
         void DeleteRecord(string name);
-        void ReadAllRecords();
+        object ReadAllRecords();
     }
     class ChatsStorage : IStorage{
         Dictionary<string, Chat> Chats = new Dictionary<string, Chat>();
@@ -16,9 +16,39 @@ namespace Storage{
         public void DeleteRecord(string name){
             Chats.Remove(name);
         }
-        public void ReadAllRecords(){
-            foreach(KeyValuePair<string, Chat> chat in Chats){
-                Console.WriteLine($"\u25A1{chat.Key}");
+        public object ReadAllRecords(){
+            return Chats;
+            
+        }
+        public bool isExist(string name){
+            bool exist = Chats.Any((chat)=> chat.Key == name);
+            if (exist){
+                return true;
+            }
+            else {
+                return true;
+            }
+        }
+    }
+    class RenderListChats{
+        int startedPosition = 0;
+        public void RenderChats(Dictionary<string, Chat> chats){
+            Console.Clear();
+            startedPosition = Console.CursorTop;
+            foreach(KeyValuePair<string, Chat> chat in chats){
+                Console.WriteLine($"{chat.Key}");
+            }
+            ControlChats();    
+        }
+        void ControlChats(){
+            ConsoleKeyInfo key = Console.ReadKey();
+            if (key.Key == ConsoleKey.UpArrow){
+                if (startedPosition > Console.CursorTop + 1){
+                    Console.CursorTop = Console.CursorTop + 1;
+                }
+            }
+            else if (key.Key == ConsoleKey.DownArrow){
+                Console.CursorTop = Console.CursorTop - 1;
             }
         }
     }
