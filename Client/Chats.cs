@@ -1,5 +1,6 @@
 using System.Collections;
 using Model;
+using System.Text;
 namespace Storage{
     interface IStorage{
         void AddRecord(string name,object record);
@@ -31,25 +32,57 @@ namespace Storage{
         }
     }
     class RenderListChats{
-        int startedPosition = 0;
         public void RenderChats(Dictionary<string, Chat> chats){
-            Console.Clear();
-            startedPosition = Console.CursorTop;
+            byte startedPosition = 0;
             foreach(KeyValuePair<string, Chat> chat in chats){
-                Console.WriteLine($"{chat.Key}");
+                Console.WriteLine($"{startedPosition+1}.{chat.Key}");
+                startedPosition++;
             }
-            ControlChats();    
         }
-        void ControlChats(){
-            ConsoleKeyInfo key = Console.ReadKey();
-            if (key.Key == ConsoleKey.UpArrow){
-                if (startedPosition > Console.CursorTop + 1){
-                    Console.CursorTop = Console.CursorTop + 1;
-                }
-            }
-            else if (key.Key == ConsoleKey.DownArrow){
-                Console.CursorTop = Console.CursorTop - 1;
-            }
+    }
+    class RenderMessages{
+        bool isFirstMessage = true;
+        public void RenderMessage(ConnectMessage Message){
+            // if (isFirstMessage && Message.GetType()==typeof(ConnectMessage)){
+            //     Console.WriteLine("\n");
+            //     Console.CursorTop = Console.CursorTop-1;
+            //     Console.WriteLine($"{Message.sender}:{Message.message}\n");
+            //     isFirstMessage = false;
+            // }
+            // else if (!isFirstMessage && Message.GetType()==typeof(ConnectMessage)){
+            Console.CursorTop = Console.CursorTop-1;
+            Console.CursorLeft = 0;
+            byte cursorTopPosition = (byte)Console.CursorTop;
+            Console.Write(new string(' ', Console.WindowWidth)); 
+            Console.CursorTop = cursorTopPosition;
+            Console.CursorLeft = 0;
+            Console.Write($"You:{Message.message}\n"); 
+            // }
+        
+        }
+        public void RenderRecievedMessage(ConnectMessage Message, StringBuilder buffer){
+            // Console.WriteLine("\n");
+            // Console.Write(new string(' ', Console.WindowWidth));
+            // Console.CursorTop = Console.CursorTop-1;
+            // Console.CursorLeft = 0;
+            int cursorTopPosition = Console.CursorTop;
+            Console.CursorLeft = 0;
+            Console.Write(new string(' ', Console.WindowWidth));
+            Console.CursorTop = cursorTopPosition;
+            Console.CursorLeft = 0;
+            Console.Write($"{Message.sender}:{Message.message}\n");
+            Console.Write(buffer.ToString());
+            // if (isFirstMessage && Message.GetType()==typeof(ConnectMessage)){
+            //     Console.WriteLine("\n");
+            //     Console.CursorTop = Console.CursorTop-1;
+            //     Console.WriteLine($"You:{Message.message}\n");
+            //     isFirstMessage = false;
+            // }
+            // else if (!isFirstMessage && Message.GetType()==typeof(ConnectMessage)){
+            //    Console.CursorTop = Console.CursorTop-1;
+            //    Console.WriteLine($"You:{Message.message}\n"); 
+            // }
+        
         }
     }
 }

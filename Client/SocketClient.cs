@@ -4,18 +4,13 @@ using System.Text;
 using System.Text.Json;
 using Storage;
 using ConsoleControl;
+using Model;
 namespace client
 {
     interface INetworkClient
     {
         public void SendMessageToChannel();
         public void RecieveMessage();
-    }
-    class ConnectMessage(){
-        public string status{get;set;}
-        public string? message{get;set;}
-        public string? channel{get;set;}
-        public string sender{get;set;} 
     }
     class ChatClient : INetworkClient{ 
         IPAddress Host;
@@ -31,6 +26,9 @@ namespace client
         ChatsStorage chatsStorage = new ChatsStorage();
         RenderListChats renderListChats = new RenderListChats(); 
         Command command = new Command();
+        RenderMessages renderSentMessage = new RenderMessages();
+        byte posCursor = 0;
+        StringBuilder? bufferText;
         public ChatClient(string host, int port){
             
             IPAddress.TryParse(host, out Host);
@@ -43,7 +41,6 @@ namespace client
             byte res = ConnectTo();
             if (res == 0){
                 receiveMessageThread = new Thread(RecieveMessage);
-                receiveMessageThread.Priority = ThreadPriority.Highest;
                 receiveMessageThread.Start();
                 ConnectToServer();
             }
@@ -64,8 +61,9 @@ namespace client
         public void SendMessageToChannel(){
             ConnectMessage newMessage = new ConnectMessage(){status="MESSAGE", channel=channelCurrent.ToString(), 
             message=textMessage.ToString(), sender=nameOwnEndpoint.ToString()};
+            renderSentMessage.RenderMessage(newMessage);
             byte[] response = Encoding.Unicode.GetBytes(JsonSerializer.Serialize(newMessage));
-            clientSocket.Send(response, response.Length, SocketFlags.None);    
+            clientSocket.Send(response, response.Length, SocketFlags.None);   
         }
         public void ConnectToServer(){
             // renderListChats.RenderChats((Dictionary<string, Chat>)chatsStorage.ReadAllRecords());
@@ -78,16 +76,17 @@ namespace client
             allDone.WaitOne();
             if (Message is not null && Message.status.Equals("OK")){
                 Console.WriteLine("Launched");
-                command.RunConsole(ref clientSocket, ref textMessage, ref channelCurrent, chatsStorage, this);
+                command.RunConsole(ref clientSocket, ref textMessage, ref channelCurrent,ref posCursor,ref bufferText ,chatsStorage, this);
             }
             
         }
         public void RecieveMessage(){
+            RenderMessages render = new RenderMessages();
             while(true){
                     int dataLength = clientSocket.Receive(buffer);
                     Message = JsonSerializer.Deserialize<ConnectMessage>(Encoding.Unicode.GetString(buffer,0,dataLength));
                     if (dataLength > 0 && Message.status.Equals("MESSAGE")){
-                        Console.WriteLine($"{Message.sender}:{Message.message}\n");
+                        render.RenderRecievedMessage(Message, bufferText);
                     }
                     else{
                         allDone.Set();
