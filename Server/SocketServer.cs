@@ -2,11 +2,12 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Text.Json;
+using StorageServer;
 namespace server
 {
     interface INetworkServer
     {
-        public void SendMessageToChannel();
+        public void SendMessageToChannel(string name, ConnectMessage message);
         public void ListenIncomeMessage();
     }
     class ConnectMessage(){
@@ -28,8 +29,8 @@ namespace server
     class ServerClient : INetworkServer{ 
         IPAddress Host;
         IPEndPoint endpoint;
-
-        Dictionary<string,Socket> connections = new Dictionary<string,Socket>();  
+        IStorage<Socket> storage = new ChannelStorage<Socket>();
+        Dictionary<string,Socket[]> connections = new Dictionary<string,Socket[]>();  
         public static ManualResetEvent allDone = new ManualResetEvent(false);
         Socket serverSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp); 
         public ServerClient(string host, int port){
@@ -60,21 +61,23 @@ namespace server
             }
             return 0;
         }
-        public void SendMessageToChannel(){
-
+        public void SendMessageToChannel(string name, ConnectMessage message){
+            List<Socket> listConnections = (List<Socket>)storage.ReadCertainRecords(name);
+            foreach(Socket connection in listConnections){
+                connection.Send(Encoding.Unicode.GetBytes(JsonSerializer.Serialize(message)));
+            }
         }
 
         void AcceptCallBack(IAsyncResult ar){
             allDone.Set();
             Socket listener = (Socket) ar.AsyncState;
-            
             Socket handler = listener.EndAccept(ar);
             StateObject state = new StateObject();
             state.workSocket = handler;
             handler.BeginReceive(state.buffer,0,state.buffer.Length,0, new AsyncCallback(RecieveCallBack), state);
         }
         void AddNewConnection(Socket client, ConnectMessage message){
-            connections[message.channel] = client;
+            storage.AddRecord(message.channel,client);
             ConnectMessage answer = new ConnectMessage(){status="OK"};
             client.Send(Encoding.Unicode.GetBytes(JsonSerializer.Serialize(answer))); 
         }
@@ -90,7 +93,7 @@ namespace server
                     AddNewConnection(handler, message);
                 }
                 else if(message.status.Equals("MESSAGE")){
-                    connections[message.channel].Send(Encoding.Unicode.GetBytes(JsonSerializer.Serialize(message)));
+                    SendMessageToChannel(message.channel,message);
                 }
                 handler.BeginReceive(state.buffer,0,state.buffer.Length,0, new AsyncCallback(RecieveCallBack), state);
             }

@@ -66,7 +66,6 @@ namespace client
             clientSocket.Send(response, response.Length, SocketFlags.None);   
         }
         public void ConnectToServer(){
-            // renderListChats.RenderChats((Dictionary<string, Chat>)chatsStorage.ReadAllRecords());
             Console.Write("Enter your name of channel: ");
             nameOwnEndpoint = new StringBuilder(Console.ReadLine());
             ConnectMessage message = new ConnectMessage(){status="CONNECT", channel=nameOwnEndpoint.ToString()};
