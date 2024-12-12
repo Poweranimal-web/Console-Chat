@@ -14,8 +14,8 @@ interface IStorage<T>{
             }
             else{
                 List<T> values = new List<T>(10);
-                values.Add(record);
                 Channels[name] = values;
+                Channels[name].Add(record);
             }
         }
         public void DeleteRecord(string name, byte index){

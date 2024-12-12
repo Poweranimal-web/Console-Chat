@@ -14,7 +14,8 @@ namespace server
         public string status{get;set;}
         public string? message{get;set;}
         public string? channel{get;set;}
-        public string sender{get;set;} 
+        public string sender{get;set;}
+        public string? IPsender{get;set;}  
     }
     public class StateObject {
         // Client  socket.
@@ -30,7 +31,6 @@ namespace server
         IPAddress Host;
         IPEndPoint endpoint;
         IStorage<Socket> storage = new ChannelStorage<Socket>();
-        Dictionary<string,Socket[]> connections = new Dictionary<string,Socket[]>();  
         public static ManualResetEvent allDone = new ManualResetEvent(false);
         Socket serverSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp); 
         public ServerClient(string host, int port){
@@ -94,6 +94,9 @@ namespace server
                 }
                 else if(message.status.Equals("MESSAGE")){
                     SendMessageToChannel(message.channel,message);
+                }
+                else if(message.status.Equals("ADD")){
+                    AddNewConnection(handler, message);
                 }
                 handler.BeginReceive(state.buffer,0,state.buffer.Length,0, new AsyncCallback(RecieveCallBack), state);
             }

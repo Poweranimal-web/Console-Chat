@@ -21,7 +21,6 @@ namespace client
         byte[] buffer = new byte[1024];
         ConnectMessage? Message = null;
         StringBuilder? textMessage = null;
-        StringBuilder? nameOwnEndpoint;
         StringBuilder channelCurrent = new StringBuilder();
         ChatsStorage chatsStorage = new ChatsStorage();
         RenderListChats renderListChats = new RenderListChats(); 
@@ -29,6 +28,8 @@ namespace client
         RenderMessages renderSentMessage = new RenderMessages();
         byte posCursor = 0;
         StringBuilder? bufferText;
+        StringBuilder? nickname;
+        StringBuilder? IP;
         public ChatClient(string host, int port){
             
             IPAddress.TryParse(host, out Host);
@@ -60,15 +61,21 @@ namespace client
         }
         public void SendMessageToChannel(){
             ConnectMessage newMessage = new ConnectMessage(){status="MESSAGE", channel=channelCurrent.ToString(), 
-            message=textMessage.ToString(), sender=nameOwnEndpoint.ToString()};
+            message=textMessage.ToString(), sender=nickname.ToString(), IPsender=IP.ToString()};
             renderSentMessage.RenderMessage(newMessage);
             byte[] response = Encoding.Unicode.GetBytes(JsonSerializer.Serialize(newMessage));
             clientSocket.Send(response, response.Length, SocketFlags.None);   
         }
+        public void AddToChannel(){
+            ConnectMessage newMessage = new ConnectMessage(){status="ADD", channel=channelCurrent.ToString()};
+            byte[] response = Encoding.Unicode.GetBytes(JsonSerializer.Serialize(newMessage));
+            clientSocket.Send(response, response.Length, SocketFlags.None);   
+        }
         public void ConnectToServer(){
-            Console.Write("Enter your name of channel: ");
-            nameOwnEndpoint = new StringBuilder(Console.ReadLine());
-            ConnectMessage message = new ConnectMessage(){status="CONNECT", channel=nameOwnEndpoint.ToString()};
+            Console.Write("Enter your nickname: ");
+            nickname = new StringBuilder(Console.ReadLine());
+            IP = new StringBuilder(clientSocket.LocalEndPoint.ToString());
+            ConnectMessage message = new ConnectMessage(){status="CONNECT", channel=nickname.ToString()};
             byte[] response = Encoding.Unicode.GetBytes(JsonSerializer.Serialize(message));
             clientSocket.Send(response, response.Length, SocketFlags.None);
             Console.WriteLine("Wait...");
@@ -84,7 +91,7 @@ namespace client
             while(true){
                     int dataLength = clientSocket.Receive(buffer);
                     Message = JsonSerializer.Deserialize<ConnectMessage>(Encoding.Unicode.GetString(buffer,0,dataLength));
-                    if (dataLength > 0 && Message.status.Equals("MESSAGE")){
+                    if (dataLength > 0 && Message.status.Equals("MESSAGE") && !Message.IPsender.ToString().Equals(IP.ToString())){
                         render.RenderRecievedMessage(Message, bufferText);
                     }
                     else{

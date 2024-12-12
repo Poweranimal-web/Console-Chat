@@ -34,13 +34,19 @@ class Command{
                         Console.Write("Enter Name of Chat: ");
                         textConsole = new StringBuilder("Enter Name of Chat: ");
                         StringBuilder nameNewChat = new StringBuilder(Console.ReadLine());
-                        Console.Write("Enter Channel: ");
-                        textConsole = new StringBuilder("Enter Channel: ");
-                        StringBuilder newChannel = new StringBuilder(Console.ReadLine());
-                        channel = newChannel;
-                        Chat chat = new Chat(){name=nameNewChat.ToString(), channel=newChannel.ToString()};
+                        channel = nameNewChat;
+                        Chat chat = new Chat(){name=nameNewChat.ToString()};
                         chatStorage.AddRecord(nameNewChat.ToString(), chat);
-                        goto case "chat message"; 
+                        goto case "chat message";
+                    case "create chat":
+                        Console.Write("Enter Name of Chat: ");
+                        textConsole = new StringBuilder("Enter Name of Chat: ");
+                        nameNewChat = new StringBuilder(Console.ReadLine());
+                        channel = nameNewChat;
+                        client.AddToChannel();
+                        chat = new Chat(){name=nameNewChat.ToString()};
+                        chatStorage.AddRecord(nameNewChat.ToString(), chat);
+                        goto case "chat message";
                     case "chat message":
                         Console.Write("Enter message: ");
                         textConsole = new StringBuilder("Enter message: ");
