@@ -3,6 +3,9 @@ using System.Net.Sockets;
 using System.Text;
 using System.Text.Json;
 using StorageServer;
+using System.Net.Security;
+using System.Security.Cryptography.X509Certificates;
+using System.Security.Authentication;
 namespace server
 {
     interface INetworkServer
@@ -15,7 +18,7 @@ namespace server
         public string? message{get;set;}
         public string? channel{get;set;}
         public string sender{get;set;}
-        public string? IPsender{get;set;}  
+        public string? IPsender{get;set;} 
     }
     public class StateObject {
         // Client  socket.
@@ -26,13 +29,15 @@ namespace server
         public byte[] buffer = new byte[BufferSize];
         // Received data string.
         public StringBuilder sb = new StringBuilder();
+        public SslStream sslStream = null;
     }
     class ServerClient : INetworkServer{ 
         IPAddress Host;
         IPEndPoint endpoint;
-        IStorage<Socket> storage = new ChannelStorage<Socket>();
+        IStorage<SslStream> storage = new ChannelStorage<SslStream>();
         public static ManualResetEvent allDone = new ManualResetEvent(false);
         Socket serverSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp); 
+        static X509Certificate2 serverCertificate = null;
         public ServerClient(string host, int port){
             IPAddress.TryParse(host, out Host);
             endpoint = new IPEndPoint(Host, port);
@@ -43,6 +48,7 @@ namespace server
             endpoint = new IPEndPoint(Host, 9090);
             byte answer = ListenTo();
             if (answer==0){
+                serverCertificate = new X509Certificate2("D:/ConsoleChat/keys/server.pfx","123");
                 ListenIncomeMessage();
             }
         }
@@ -55,16 +61,15 @@ namespace server
             }
             catch (Exception e)
             {
-                
                 Console.WriteLine(e.Message);
                 return 1;
             }
             return 0;
         }
         public void SendMessageToChannel(string name, ConnectMessage message){
-            List<Socket> listConnections = (List<Socket>)storage.ReadCertainRecords(name);
-            foreach(Socket connection in listConnections){
-                connection.Send(Encoding.Unicode.GetBytes(JsonSerializer.Serialize(message)));
+            List<SslStream> listConnections = (List<SslStream>)storage.ReadCertainRecords(name);
+            foreach(SslStream connection in listConnections){
+                connection.Write(Encoding.Unicode.GetBytes(JsonSerializer.Serialize(message)));
             }
         }
 
@@ -74,19 +79,32 @@ namespace server
             Socket handler = listener.EndAccept(ar);
             StateObject state = new StateObject();
             state.workSocket = handler;
-            handler.BeginReceive(state.buffer,0,state.buffer.Length,0, new AsyncCallback(RecieveCallBack), state);
+            NetworkStream networkStream = new NetworkStream(handler);
+            SslStream sslStream = new SslStream(networkStream);
+            state.sslStream = sslStream;
+            sslStream.BeginAuthenticateAsServer(serverCertificate, false,
+            SslProtocols.Tls12, false, AuthenticateCallback, state);
         }
-        void AddNewConnection(Socket client, ConnectMessage message){
-            storage.AddRecord(message.channel,client);
-            ConnectMessage answer = new ConnectMessage(){status="OK"};
-            client.Send(Encoding.Unicode.GetBytes(JsonSerializer.Serialize(answer))); 
+        void AuthenticateCallback(IAsyncResult ar){
+            StateObject state = (StateObject)ar.AsyncState;
+
+            try
+            {
+                state.sslStream.EndAuthenticateAsServer(ar);
+                state.sslStream.BeginRead(state.buffer, 0, state.buffer.Length, RecieveCallBack, state);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"SSL authentication failed: {ex.Message}{ex.Source}");
+                state.sslStream.Dispose();
+            }
         }
         void RecieveCallBack(IAsyncResult ar){
             // Retrieve the state object and the handler socket
             // from the asynchronous state object.
             StateObject state = (StateObject) ar.AsyncState;
-            Socket handler = state.workSocket;
-            int bytesRead = handler.EndReceive(ar);
+            SslStream handler = state.sslStream;
+            int bytesRead = state.sslStream.EndRead(ar);
             if (bytesRead > 0){
                 ConnectMessage message = JsonSerializer.Deserialize<ConnectMessage>(Encoding.Unicode.GetString(state.buffer,0,bytesRead));
                 if (message.status.Equals("CONNECT")){
@@ -98,9 +116,15 @@ namespace server
                 else if(message.status.Equals("ADD")){
                     AddNewConnection(handler, message);
                 }
-                handler.BeginReceive(state.buffer,0,state.buffer.Length,0, new AsyncCallback(RecieveCallBack), state);
+                state.sslStream.BeginRead(state.buffer, 0, state.buffer.Length, RecieveCallBack, state);
             }
         }
+        void AddNewConnection(SslStream client, ConnectMessage message){
+            storage.AddRecord(message.channel,client);
+            ConnectMessage answer = new ConnectMessage(){status="OK"};
+            client.Write(Encoding.Unicode.GetBytes(JsonSerializer.Serialize(answer))); 
+        }
+        
         public async void ListenIncomeMessage(){
             Console.WriteLine("Listen...");
             while(true){
@@ -108,9 +132,6 @@ namespace server
                 serverSocket.BeginAccept(new AsyncCallback(AcceptCallBack),serverSocket);
                 allDone.WaitOne();
             }
-            
-
-
         }
     }
 

@@ -5,6 +5,9 @@ using System.Text.Json;
 using Storage;
 using ConsoleControl;
 using Model;
+using System.Security.Authentication;
+using System.Net.Security;
+using System.Security.Cryptography.X509Certificates;
 namespace client
 {
     interface INetworkClient
@@ -23,18 +26,30 @@ namespace client
         StringBuilder? textMessage = null;
         StringBuilder channelCurrent = new StringBuilder();
         ChatsStorage chatsStorage = new ChatsStorage();
-        RenderListChats renderListChats = new RenderListChats(); 
         Command command = new Command();
         RenderMessages renderSentMessage = new RenderMessages();
         byte posCursor = 0;
         StringBuilder? bufferText;
         StringBuilder? nickname;
         StringBuilder? IP;
+        NetworkStream networkStream;   
+        SslStream sslStream;
         public ChatClient(string host, int port){
-            
             IPAddress.TryParse(host, out Host);
             endpoint = new IPEndPoint(Host, port);
             ConnectTo();
+        }
+        public static bool ValidateServerCertificate(
+        object sender,
+        X509Certificate certificate,
+        X509Chain chain,
+        SslPolicyErrors sslPolicyErrors)
+        {
+            if (sslPolicyErrors == SslPolicyErrors.None)
+                return true;
+
+            Console.WriteLine($"Certificate error: {sslPolicyErrors}");
+            return false;
         }
         public ChatClient(){
             IPAddress.TryParse("127.0.0.1", out IPAddress? Host);
@@ -50,10 +65,14 @@ namespace client
             try
             {
               clientSocket.Connect(endpoint);
+              networkStream = new NetworkStream(clientSocket);
+              sslStream = new SslStream(networkStream, false, (sender, cert, chain, errors)=> true);
+              sslStream.AuthenticateAsClient("127.0.0.1", null, SslProtocols.Tls12, 
+              checkCertificateRevocation: false);
+              Console.WriteLine("SSL authentication succeeded.");
             }
             catch (Exception e)
             {
-                
                 Console.WriteLine(e.Message);
                 return 1;
             }
@@ -64,12 +83,12 @@ namespace client
             message=textMessage.ToString(), sender=nickname.ToString(), IPsender=IP.ToString()};
             renderSentMessage.RenderMessage(newMessage);
             byte[] response = Encoding.Unicode.GetBytes(JsonSerializer.Serialize(newMessage));
-            clientSocket.Send(response, response.Length, SocketFlags.None);   
+            sslStream.Write(response,0,response.Length);   
         }
         public void AddToChannel(){
             ConnectMessage newMessage = new ConnectMessage(){status="ADD", channel=channelCurrent.ToString()};
             byte[] response = Encoding.Unicode.GetBytes(JsonSerializer.Serialize(newMessage));
-            clientSocket.Send(response, response.Length, SocketFlags.None);   
+            sslStream.Write(response,0,response.Length);
         }
         public void ConnectToServer(){
             Console.Write("Enter your nickname: ");
@@ -77,24 +96,23 @@ namespace client
             IP = new StringBuilder(clientSocket.LocalEndPoint.ToString());
             ConnectMessage message = new ConnectMessage(){status="CONNECT", channel=nickname.ToString()};
             byte[] response = Encoding.Unicode.GetBytes(JsonSerializer.Serialize(message));
-            clientSocket.Send(response, response.Length, SocketFlags.None);
+            sslStream.Write(response,0,response.Length);
             Console.WriteLine("Wait...");
             allDone.WaitOne();
             if (Message is not null && Message.status.Equals("OK")){
                 Console.WriteLine("Launched");
                 command.RunConsole(ref clientSocket, ref textMessage, ref channelCurrent,ref posCursor,ref bufferText ,chatsStorage, this);
             }
-            
         }
         public void RecieveMessage(){
             RenderMessages render = new RenderMessages();
             while(true){
-                    int dataLength = clientSocket.Receive(buffer);
+                    int dataLength = sslStream.Read(buffer);
                     Message = JsonSerializer.Deserialize<ConnectMessage>(Encoding.Unicode.GetString(buffer,0,dataLength));
                     if (dataLength > 0 && Message.status.Equals("MESSAGE") && !Message.IPsender.ToString().Equals(IP.ToString())){
                         render.RenderRecievedMessage(Message, bufferText);
                     }
-                    else{
+                    else if (Message.status.Equals("OK")) {
                         allDone.Set();
                     }
             }

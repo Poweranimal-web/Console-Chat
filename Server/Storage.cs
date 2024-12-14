@@ -6,7 +6,6 @@ interface IStorage<T>{
         object ReadCertainRecords(string name);
 }
     class ChannelStorage<T> : IStorage<T>{
-        
         Dictionary<string, List<T>> Channels = new Dictionary<string, List<T>>();
         public void AddRecord(string name,T record){
             if(Channels.ContainsKey(name)){
@@ -32,5 +31,23 @@ interface IStorage<T>{
             return Channels;
             
         }
+    }
+    class KeyChannelStorage<T>: IStorage<T> 
+    {
+        Dictionary<string, T> Keys = new Dictionary<string, T>();
+
+        public void AddRecord(string name,T record){
+            Keys[name] = record;
+        }
+        public void DeleteRecord(string name){
+            Keys.Remove(name);
+        }
+        public object ReadAllRecords(){
+            return Keys;
+        }
+        public object ReadCertainRecords(string name){
+            return Keys[name];
+        }
+
     }
 }
