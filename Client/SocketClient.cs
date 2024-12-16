@@ -20,10 +20,10 @@ namespace client
         IPEndPoint endpoint; 
         Socket clientSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp); 
         Thread receiveMessageThread;
-        ManualResetEvent allDone = new ManualResetEvent(false);
+        ManualResetEvent allDone = new ManualResetEvent(false); // Variable for controling threads in app
         byte[] buffer = new byte[1024];
-        ConnectMessage? Message = null;
-        StringBuilder? textMessage = null;
+        ConnectMessage? Message = null; // Variable for storing message that came from server
+        StringBuilder? textMessage = null; // Variable stores value of text message for sending 
         StringBuilder channelCurrent = new StringBuilder();
         ChatsStorage chatsStorage = new ChatsStorage();
         Command command = new Command();
@@ -85,6 +85,12 @@ namespace client
             byte[] response = Encoding.Unicode.GetBytes(JsonSerializer.Serialize(newMessage));
             sslStream.Write(response,0,response.Length);   
         }
+        public void CheckChannelExist(string channelName){
+            allDone.Reset();
+            ConnectMessage newMessage = new ConnectMessage(){status="CHECK", channel=channelName};
+            byte[] response = Encoding.Unicode.GetBytes(JsonSerializer.Serialize(newMessage));
+            sslStream.Write(response,0,response.Length);   
+        }
         public void AddToChannel(){
             ConnectMessage newMessage = new ConnectMessage(){status="ADD", channel=channelCurrent.ToString()};
             byte[] response = Encoding.Unicode.GetBytes(JsonSerializer.Serialize(newMessage));
@@ -101,7 +107,8 @@ namespace client
             allDone.WaitOne();
             if (Message is not null && Message.status.Equals("OK")){
                 Console.WriteLine("Launched");
-                command.RunConsole(ref clientSocket, ref textMessage, ref channelCurrent,ref posCursor,ref bufferText ,chatsStorage, this);
+                command.RunConsole(ref clientSocket, ref textMessage, ref channelCurrent,
+                ref posCursor,ref bufferText,ref allDone,ref Message,chatsStorage, this);
             }
         }
         public void RecieveMessage(){
@@ -113,6 +120,12 @@ namespace client
                         render.RenderRecievedMessage(Message, bufferText);
                     }
                     else if (Message.status.Equals("OK")) {
+                        allDone.Set();
+                    }
+                    else if (Message.status.Equals("CREATED")) {
+                        allDone.Set();
+                    }
+                    else if (Message.status.Equals("FAILED")) {
                         allDone.Set();
                     }
             }

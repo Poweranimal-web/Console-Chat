@@ -17,6 +17,12 @@ interface IStorage<T>{
                 Channels[name].Add(record);
             }
         }
+        public bool IsExist(string name){
+            if (Channels.ContainsKey(name)){
+                return true;
+            }
+            return false;
+        }
         public void DeleteRecord(string name, byte index){
             Channels[name].RemoveAt(index);
         }

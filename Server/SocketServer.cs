@@ -34,7 +34,7 @@ namespace server
     class ServerClient : INetworkServer{ 
         IPAddress Host;
         IPEndPoint endpoint;
-        IStorage<SslStream> storage = new ChannelStorage<SslStream>();
+        ChannelStorage<SslStream> storage = new ChannelStorage<SslStream>();
         public static ManualResetEvent allDone = new ManualResetEvent(false);
         Socket serverSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp); 
         static X509Certificate2 serverCertificate = null;
@@ -116,6 +116,9 @@ namespace server
                 else if(message.status.Equals("ADD")){
                     AddNewConnection(handler, message);
                 }
+                else if(message.status.Equals("CHECK")){
+                    CheckChannel(handler, message);
+                }
                 state.sslStream.BeginRead(state.buffer, 0, state.buffer.Length, RecieveCallBack, state);
             }
         }
@@ -123,6 +126,16 @@ namespace server
             storage.AddRecord(message.channel,client);
             ConnectMessage answer = new ConnectMessage(){status="OK"};
             client.Write(Encoding.Unicode.GetBytes(JsonSerializer.Serialize(answer))); 
+        }
+        void CheckChannel(SslStream client, ConnectMessage message){
+            if (storage.IsExist(message.channel)){
+                ConnectMessage answer = new ConnectMessage(){status="CREATED"};
+                client.Write(Encoding.Unicode.GetBytes(JsonSerializer.Serialize(answer))); 
+            }
+            else{
+                ConnectMessage answer = new ConnectMessage(){status="FAILED"};
+                client.Write(Encoding.Unicode.GetBytes(JsonSerializer.Serialize(answer))); 
+            }
         }
         
         public async void ListenIncomeMessage(){

@@ -5,10 +5,13 @@ using Model;
 using client;
 namespace ConsoleControl{
 class Command{
-    public void RunConsole(ref Socket socket,ref StringBuilder message, ref StringBuilder channel, ref byte positionCursor, ref StringBuilder textConsole, ChatsStorage chatStorage, ChatClient client){
+    public void RunConsole(ref Socket socket,ref StringBuilder message, ref StringBuilder channel, 
+    ref byte positionCursor, ref StringBuilder textConsole, ref ManualResetEvent thread, 
+    ref ConnectMessage recievedMessage, ChatsStorage chatStorage, ChatClient client){
         bool isWorking = true;
         RenderListChats renderListChats = new RenderListChats();
         positionCursor = (byte)Console.CursorTop;
+        Chat chat;
         while (isWorking){
             Console.Write("Enter command: ");
             textConsole = new StringBuilder("Enter command: "); 
@@ -34,10 +37,18 @@ class Command{
                         Console.Write("Enter Name of Chat: ");
                         textConsole = new StringBuilder("Enter Name of Chat: ");
                         StringBuilder nameNewChat = new StringBuilder(Console.ReadLine());
-                        channel = nameNewChat;
-                        Chat chat = new Chat(){name=nameNewChat.ToString()};
-                        chatStorage.AddRecord(nameNewChat.ToString(), chat);
-                        goto case "chat message";
+                        client.CheckChannelExist(nameNewChat.ToString());
+                        thread.WaitOne();
+                        if (recievedMessage.status.Equals("CREATED")){
+                            channel = nameNewChat;
+                            chat = new Chat(){name=nameNewChat.ToString()};
+                            chatStorage.AddRecord(nameNewChat.ToString(), chat);
+                            goto case "chat message";
+                        }
+                        else{
+                            Console.WriteLine("Adding chat failed! Chat doesn't exist now, you can create your own.");
+                            break;
+                        }
                     case "create chat":
                         Console.Write("Enter Name of Chat: ");
                         textConsole = new StringBuilder("Enter Name of Chat: ");
