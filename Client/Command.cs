@@ -55,14 +55,24 @@ class Command{
                         nameNewChat = new StringBuilder(Console.ReadLine());
                         channel = nameNewChat;
                         client.AddToChannel();
-                        chat = new Chat(){name=nameNewChat.ToString()};
-                        chatStorage.AddRecord(nameNewChat.ToString(), chat);
-                        goto case "chat message";
+                        thread.WaitOne();
+                        if (recievedMessage.status.Equals("CREATED")){
+                            chat = new Chat(){name=nameNewChat.ToString()};
+                            chatStorage.AddRecord(nameNewChat.ToString(), chat);
+                            goto case "chat message";
+                        }
+                        else{
+                            Console.WriteLine("Adding chat failed! Chat with the same name already exist now.");
+                            break;
+                        }
                     case "chat message":
                         Console.Write("Enter message: ");
                         textConsole = new StringBuilder("Enter message: ");
                         message = new StringBuilder(Console.ReadLine());
                         if (message.Equals("exit")){
+                            break;
+                        }
+                        if (message.Equals("show users")){
                             break;
                         }
                         else{
@@ -80,6 +90,9 @@ class Command{
                         else{
                             break;
                         }
+                    case "test":
+                        client.TestRequest();
+                        break;
                         
                     
 

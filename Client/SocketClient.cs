@@ -87,12 +87,27 @@ namespace client
         }
         public void CheckChannelExist(string channelName){
             allDone.Reset();
-            ConnectMessage newMessage = new ConnectMessage(){status="CHECK", channel=channelName};
+            ConnectMessage newMessage = new ConnectMessage(){status="CHECK", channel=channelName, 
+            sender=nickname.ToString()};
             byte[] response = Encoding.Unicode.GetBytes(JsonSerializer.Serialize(newMessage));
             sslStream.Write(response,0,response.Length);   
         }
+        public void ShowAllUsersRequest(){
+            ConnectMessage newMessage = new ConnectMessage(){status="SHOW", channel=channelCurrent.ToString(), 
+            sender=nickname.ToString()};
+            byte[] response = Encoding.Unicode.GetBytes(JsonSerializer.Serialize(newMessage));
+            sslStream.Write(response,0,response.Length);
+        }
         public void AddToChannel(){
-            ConnectMessage newMessage = new ConnectMessage(){status="ADD", channel=channelCurrent.ToString()};
+            allDone.Reset();
+            ConnectMessage newMessage = new ConnectMessage(){status="ADD", 
+            channel=channelCurrent.ToString(), sender=nickname.ToString()};
+            byte[] response = Encoding.Unicode.GetBytes(JsonSerializer.Serialize(newMessage));
+            sslStream.Write(response,0,response.Length);
+        }
+        public void TestRequest(){
+            ConnectMessage newMessage = new ConnectMessage(){status="UPDATE PRIVACY", 
+            channel=channelCurrent.ToString(), sender=nickname.ToString()};
             byte[] response = Encoding.Unicode.GetBytes(JsonSerializer.Serialize(newMessage));
             sslStream.Write(response,0,response.Length);
         }
@@ -105,10 +120,14 @@ namespace client
             sslStream.Write(response,0,response.Length);
             Console.WriteLine("Wait...");
             allDone.WaitOne();
-            if (Message is not null && Message.status.Equals("OK")){
+            if (Message is not null && Message.status.Equals("CREATED")){
                 Console.WriteLine("Launched");
+                channelCurrent = nickname;
                 command.RunConsole(ref clientSocket, ref textMessage, ref channelCurrent,
                 ref posCursor,ref bufferText,ref allDone,ref Message,chatsStorage, this);
+            }
+            else {
+                ConnectToServer();
             }
         }
         public void RecieveMessage(){
@@ -127,6 +146,10 @@ namespace client
                     }
                     else if (Message.status.Equals("FAILED")) {
                         allDone.Set();
+                    }
+                    else if (Message.status.Equals("ERROR")){
+                        render.RenderRecievedMessage(Message, bufferText);
+
                     }
             }
             

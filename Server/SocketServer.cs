@@ -13,13 +13,6 @@ namespace server
         public void SendMessageToChannel(string name, ConnectMessage message);
         public void ListenIncomeMessage();
     }
-    class ConnectMessage(){
-        public string status{get;set;}
-        public string? message{get;set;}
-        public string? channel{get;set;}
-        public string sender{get;set;}
-        public string? IPsender{get;set;} 
-    }
     public class StateObject {
         // Client  socket.
         public Socket workSocket = null;
@@ -34,7 +27,8 @@ namespace server
     class ServerClient : INetworkServer{ 
         IPAddress Host;
         IPEndPoint endpoint;
-        ChannelStorage<SslStream> storage = new ChannelStorage<SslStream>();
+        ChannelStorage<SslStream,EndpointEntity> storage = new ChannelStorage<SslStream,EndpointEntity>();
+        SettingsChannelStorage<SettingsEntity> storageSettings = new SettingsChannelStorage<SettingsEntity>();
         public static ManualResetEvent allDone = new ManualResetEvent(false);
         Socket serverSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp); 
         static X509Certificate2 serverCertificate = null;
@@ -67,9 +61,9 @@ namespace server
             return 0;
         }
         public void SendMessageToChannel(string name, ConnectMessage message){
-            List<SslStream> listConnections = (List<SslStream>)storage.ReadCertainRecords(name);
-            foreach(SslStream connection in listConnections){
-                connection.Write(Encoding.Unicode.GetBytes(JsonSerializer.Serialize(message)));
+            List<EndpointEntity> listConnections = (List<EndpointEntity>)storage.ReadCertainRecords(name);
+            foreach(EndpointEntity connection in listConnections){
+                connection.endpoint.Write(Encoding.Unicode.GetBytes(JsonSerializer.Serialize(message)));
             }
         }
 
@@ -87,7 +81,6 @@ namespace server
         }
         void AuthenticateCallback(IAsyncResult ar){
             StateObject state = (StateObject)ar.AsyncState;
-
             try
             {
                 state.sslStream.EndAuthenticateAsServer(ar);
@@ -99,6 +92,27 @@ namespace server
                 state.sslStream.Dispose();
             }
         }
+        void ResponseServer(SslStream handler,ConnectMessage message){
+            if (message.status.Equals("CONNECT")){
+                AddNewConnection(handler, message);
+            }
+            else if(message.status.Equals("MESSAGE")){
+                SendMessageToChannel(message.channel,message);
+            }
+            else if(message.status.Equals("ADD")){
+                AddNewConnection(handler, message);
+            }
+            else if(message.status.Equals("CHECK")){
+                CheckChannel(handler, message);
+            }
+            else if(message.status.Equals("SHOW")){
+                ShowUsers(handler, message);
+            } 
+        }
+        void ResponseFailServer(SslStream client,ConnectMessage message){
+            ConnectMessage answer = new ConnectMessage(){status="ERROR", message="You don't have privilege"};
+            client.Write(Encoding.Unicode.GetBytes(JsonSerializer.Serialize(answer)));
+        }
         void RecieveCallBack(IAsyncResult ar){
             // Retrieve the state object and the handler socket
             // from the asynchronous state object.
@@ -107,34 +121,47 @@ namespace server
             int bytesRead = state.sslStream.EndRead(ar);
             if (bytesRead > 0){
                 ConnectMessage message = JsonSerializer.Deserialize<ConnectMessage>(Encoding.Unicode.GetString(state.buffer,0,bytesRead));
-                if (message.status.Equals("CONNECT")){
-                    AddNewConnection(handler, message);
-                }
-                else if(message.status.Equals("MESSAGE")){
-                    SendMessageToChannel(message.channel,message);
-                }
-                else if(message.status.Equals("ADD")){
-                    AddNewConnection(handler, message);
-                }
-                else if(message.status.Equals("CHECK")){
-                    CheckChannel(handler, message);
-                }
+                SettingsEntity? settingsEntity = (SettingsEntity)storageSettings.ReadCertainRecords(message.channel);
+                List<EndpointEntity> endpoints = (List<EndpointEntity>)storage.ReadCertainRecords(message.channel);
+                PrivilligeSystem system = new PrivilligeSystem(handler,message,
+                endpoints, settingsEntity.admins);
+                system.PrivillageAction(this.ResponseFailServer ,this.ResponseServer);
                 state.sslStream.BeginRead(state.buffer, 0, state.buffer.Length, RecieveCallBack, state);
             }
         }
         void AddNewConnection(SslStream client, ConnectMessage message){
-            storage.AddRecord(message.channel,client);
-            ConnectMessage answer = new ConnectMessage(){status="OK"};
-            client.Write(Encoding.Unicode.GetBytes(JsonSerializer.Serialize(answer))); 
+            if (storage.IsExist(message.channel)){
+                ConnectMessage answer = new ConnectMessage(){status="FAILED"};
+                client.Write(Encoding.Unicode.GetBytes(JsonSerializer.Serialize(answer)));
+            }
+            else{
+                EndpointEntity endpoint = new EndpointEntity(){name=message.channel,
+                endpoint=client};
+                bool channelIsExist = storage.AddRecord(message.channel, endpoint);
+                if (!channelIsExist){
+                    List<int> admins = new List<int>(2){0};
+                    SettingsEntity settingsEntity = new SettingsEntity(){privateChat=false, admins=admins};
+                    storageSettings.AddRecord(message.channel, settingsEntity);
+                    SettingsEntity? Entity = (SettingsEntity)storageSettings.ReadCertainRecords(message.channel);
+                }
+                ConnectMessage answer = new ConnectMessage(){status="CREATED"};
+                client.Write(Encoding.Unicode.GetBytes(JsonSerializer.Serialize(answer)));
+            }
+        }
+        void ShowUsers(SslStream client, ConnectMessage message){
+            
         }
         void CheckChannel(SslStream client, ConnectMessage message){
             if (storage.IsExist(message.channel)){
+                EndpointEntity endpoint = new EndpointEntity(){name=message.sender,
+                endpoint=client};
+                storage.AddRecord(message.channel, endpoint);
                 ConnectMessage answer = new ConnectMessage(){status="CREATED"};
-                client.Write(Encoding.Unicode.GetBytes(JsonSerializer.Serialize(answer))); 
+                client.Write(Encoding.Unicode.GetBytes(JsonSerializer.Serialize(answer)));
             }
             else{
                 ConnectMessage answer = new ConnectMessage(){status="FAILED"};
-                client.Write(Encoding.Unicode.GetBytes(JsonSerializer.Serialize(answer))); 
+                client.Write(Encoding.Unicode.GetBytes(JsonSerializer.Serialize(answer)));
             }
         }
         
