@@ -150,6 +150,7 @@ namespace client
                 ref posCursor,ref bufferText,ref allDone,ref Message,chatsStorage, this);
             }
             else {
+                allDone.Reset();
                 ConnectToServer();
             }
         }
