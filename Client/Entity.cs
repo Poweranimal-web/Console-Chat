@@ -1,3 +1,4 @@
+using System.Text;
 namespace Model {
     class Chat{
         public string name{get;set;}
@@ -8,5 +9,6 @@ namespace Model {
         public string? channel{get;set;}
         public string sender{get;set;} 
         public string? IPsender{get;set;} 
+        public List<string>? listEntity{get;set;}
     }
 }

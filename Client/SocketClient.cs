@@ -98,6 +98,28 @@ namespace client
             byte[] response = Encoding.Unicode.GetBytes(JsonSerializer.Serialize(newMessage));
             sslStream.Write(response,0,response.Length);
         }
+        public void SendPasswordRequest(StringBuilder password){
+            allDone.Reset();
+            ConnectMessage newMessage = new ConnectMessage(){status="PASSWORD",  message=password.ToString()};
+            byte[] response = Encoding.Unicode.GetBytes(JsonSerializer.Serialize(newMessage));
+            sslStream.Write(response,0,response.Length);
+        }
+        public void ChangePrivacySettingsRequest(bool privateChat,string? password = null){
+            if (privateChat){
+                List<string> listEntity = new List<string>(1){password};
+                ConnectMessage newMessage = new ConnectMessage(){status="PRIVATE CHAT", 
+                channel=channelCurrent.ToString(), sender=nickname.ToString(), listEntity=listEntity};
+                byte[] response = Encoding.Unicode.GetBytes(JsonSerializer.Serialize(newMessage));
+                sslStream.Write(response,0,response.Length);
+            }
+            else{
+                ConnectMessage newMessage = new ConnectMessage(){status="PUBLIC CHAT", 
+                channel=channelCurrent.ToString(), sender=nickname.ToString()};
+                byte[] response = Encoding.Unicode.GetBytes(JsonSerializer.Serialize(newMessage));
+                sslStream.Write(response,0,response.Length);
+            }
+
+        }
         public void AddToChannel(){
             allDone.Reset();
             ConnectMessage newMessage = new ConnectMessage(){status="ADD", 
@@ -115,7 +137,8 @@ namespace client
             Console.Write("Enter your nickname: ");
             nickname = new StringBuilder(Console.ReadLine());
             IP = new StringBuilder(clientSocket.LocalEndPoint.ToString());
-            ConnectMessage message = new ConnectMessage(){status="CONNECT", channel=nickname.ToString()};
+            ConnectMessage message = new ConnectMessage(){status="CONNECT", channel=nickname.ToString(),
+            sender=nickname.ToString()};
             byte[] response = Encoding.Unicode.GetBytes(JsonSerializer.Serialize(message));
             sslStream.Write(response,0,response.Length);
             Console.WriteLine("Wait...");
@@ -149,7 +172,18 @@ namespace client
                     }
                     else if (Message.status.Equals("ERROR")){
                         render.RenderRecievedMessage(Message, bufferText);
-
+                    }
+                    else if (Message.status.Equals("LIST")){
+                        render.RenderListMessage(Message, bufferText);
+                    }
+                    else if (Message.status.Equals("SETTED")){
+                        render.RenderRecievedMessage(Message, bufferText);
+                    }
+                    else if (Message.status.Equals("SETTED")){
+                        render.RenderRecievedMessage(Message, bufferText);
+                    }
+                    else if (Message.status.Equals("PASSWORD")){
+                        allDone.Set();
                     }
             }
             

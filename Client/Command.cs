@@ -45,6 +45,23 @@ class Command{
                             chatStorage.AddRecord(nameNewChat.ToString(), chat);
                             goto case "chat message";
                         }
+                        else if (recievedMessage.status.Equals("PASSWORD")){
+                            Console.Write("Chat required password: ");
+                            textConsole = new StringBuilder("Chat required password: ");
+                            StringBuilder password = new StringBuilder(Console.ReadLine());
+                            client.SendPasswordRequest(password);
+                            thread.WaitOne();
+                            if (recievedMessage.status.Equals("CREATED")){
+                                channel = nameNewChat;
+                                chat = new Chat(){name=nameNewChat.ToString()};
+                                chatStorage.AddRecord(nameNewChat.ToString(), chat);
+                                goto case "chat message";
+                            }
+                            else{
+                                Console.WriteLine("Adding chat failed! Invalid password of chat.");
+                                break;
+                            }
+                        }
                         else{
                             Console.WriteLine("Adding chat failed! Chat doesn't exist now, you can create your own.");
                             break;
@@ -72,8 +89,27 @@ class Command{
                         if (message.Equals("exit")){
                             break;
                         }
-                        if (message.Equals("show users")){
+                        else if (message.Equals("show users")){
+                            client.ShowAllUsersRequest();
                             break;
+                        }
+                        else if (message.Equals("set private")){
+                            Console.Write("Do you want private chat(yes/no): ");
+                            textConsole = new StringBuilder("Do you want private chat(yes/no): ");
+                            StringBuilder privacy = new StringBuilder(Console.ReadLine());
+                            if (privacy.Equals("yes")){
+                                Console.Write("Enter password: ");
+                                textConsole = new StringBuilder("Enter password: ");
+                                StringBuilder password = new StringBuilder(Console.ReadLine());
+                                client.ChangePrivacySettingsRequest(true, password.ToString());
+                                break;
+                            }
+                            else if(privacy.Equals("no")){
+                                client.ChangePrivacySettingsRequest(false);
+                                break;
+                            }
+                            break;
+
                         }
                         else{
                             client.SendMessageToChannel();

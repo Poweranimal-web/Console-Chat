@@ -43,46 +43,34 @@ namespace Storage{
     class RenderMessages{
         bool isFirstMessage = true;
         public void RenderMessage(ConnectMessage Message){
-            // if (isFirstMessage && Message.GetType()==typeof(ConnectMessage)){
-            //     Console.WriteLine("\n");
-            //     Console.CursorTop = Console.CursorTop-1;
-            //     Console.WriteLine($"{Message.sender}:{Message.message}\n");
-            //     isFirstMessage = false;
-            // }
-            // else if (!isFirstMessage && Message.GetType()==typeof(ConnectMessage)){
             Console.CursorTop = Console.CursorTop-1;
             Console.CursorLeft = 0;
             byte cursorTopPosition = (byte)Console.CursorTop;
             Console.Write(new string(' ', Console.WindowWidth)); 
             Console.CursorTop = cursorTopPosition;
             Console.CursorLeft = 0;
-            Console.Write($"You:{Message.message}\n"); 
-            // }
-        
+            Console.Write($"You:{Message.message}\n");
         }
         public void RenderRecievedMessage(ConnectMessage Message, StringBuilder buffer){
-            // Console.WriteLine("\n");
-            // Console.Write(new string(' ', Console.WindowWidth));
-            // Console.CursorTop = Console.CursorTop-1;
-            // Console.CursorLeft = 0;
             int cursorTopPosition = Console.CursorTop;
             Console.CursorLeft = 0;
             Console.Write(new string(' ', Console.WindowWidth));
             Console.CursorTop = cursorTopPosition;
             Console.CursorLeft = 0;
             Console.Write($"{Message.sender}:{Message.message}\n");
-            Console.Write(buffer.ToString());
-            // if (isFirstMessage && Message.GetType()==typeof(ConnectMessage)){
-            //     Console.WriteLine("\n");
-            //     Console.CursorTop = Console.CursorTop-1;
-            //     Console.WriteLine($"You:{Message.message}\n");
-            //     isFirstMessage = false;
-            // }
-            // else if (!isFirstMessage && Message.GetType()==typeof(ConnectMessage)){
-            //    Console.CursorTop = Console.CursorTop-1;
-            //    Console.WriteLine($"You:{Message.message}\n"); 
-            // }
-        
+            Console.Write(buffer.ToString());        
+        }
+        public void RenderListMessage(ConnectMessage Message, StringBuilder buffer){
+            int cursorTopPosition = Console.CursorTop;
+            Console.CursorLeft = 0;
+            Console.Write(new string(' ', Console.WindowWidth));
+            Console.CursorTop = cursorTopPosition;
+            Console.CursorLeft = 0;
+            Console.Write("List:\n");
+            for(int i =0;i<Message.listEntity.Count;i++){
+                Console.Write($"{i+1}.{Message.listEntity[i]}\n");                
+            }
+            Console.Write(buffer.ToString());        
         }
     }
 }
