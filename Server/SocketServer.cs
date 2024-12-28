@@ -6,6 +6,7 @@ using StorageServer;
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
 using System.Security.Authentication;
+using Entity;
 namespace server
 {
     interface INetworkServer
@@ -108,9 +109,29 @@ namespace server
             else if(message.status.Equals("SHOW")){
                 ShowUsers(handler, message);
             } 
+            else if(message.status.Equals("PRIVATE CHAT")){
+                ChangePrivateChat(handler, message);
+            }
+            else if(message.status.Equals("PUBLIC CHAT")){
+                ChangePublicChat(handler, message);
+            }
         }
         void ResponseFailServer(SslStream client,ConnectMessage message){
             ConnectMessage answer = new ConnectMessage(){status="ERROR", message="You don't have privilege"};
+            client.Write(Encoding.Unicode.GetBytes(JsonSerializer.Serialize(answer)));
+        }
+        void ChangePrivateChat(SslStream client,ConnectMessage message){
+            SettingsEntity settings = (SettingsEntity)storageSettings.ReadCertainRecords(message.channel);
+            settings.privateChat = true;
+            settings.password = message.listEntity[0];
+            ConnectMessage answer = new ConnectMessage(){status="SETTED", message="Set to private chat"};
+            client.Write(Encoding.Unicode.GetBytes(JsonSerializer.Serialize(answer)));
+        }
+        void ChangePublicChat(SslStream client,ConnectMessage message){
+            SettingsEntity settings = (SettingsEntity)storageSettings.ReadCertainRecords(message.channel);
+            settings.privateChat = false;
+            settings.password = "";
+            ConnectMessage answer = new ConnectMessage(){status="SETTED", message="Set to public chat"};
             client.Write(Encoding.Unicode.GetBytes(JsonSerializer.Serialize(answer)));
         }
         void RecieveCallBack(IAsyncResult ar){
@@ -135,7 +156,7 @@ namespace server
                 client.Write(Encoding.Unicode.GetBytes(JsonSerializer.Serialize(answer)));
             }
             else{
-                EndpointEntity endpoint = new EndpointEntity(){name=message.channel,
+                EndpointEntity endpoint = new EndpointEntity(){name=message.sender,
                 endpoint=client};
                 bool channelIsExist = storage.AddRecord(message.channel, endpoint);
                 if (!channelIsExist){
@@ -149,18 +170,46 @@ namespace server
             }
         }
         void ShowUsers(SslStream client, ConnectMessage message){
-            
+            List<EndpointEntity> users = (List<EndpointEntity>)storage.ReadCertainRecords(message.channel);
+            List<string> usersList = users.ConvertAll(new Converter<EndpointEntity, string>(convertTo));
+            ConnectMessage answer = new ConnectMessage(){status="LIST", listEntity=usersList};
+            client.Write(Encoding.Unicode.GetBytes(JsonSerializer.Serialize(answer)));
+        }
+        string convertTo(EndpointEntity user){
+            return user.name;
+
         }
         void CheckChannel(SslStream client, ConnectMessage message){
             if (storage.IsExist(message.channel)){
-                EndpointEntity endpoint = new EndpointEntity(){name=message.sender,
-                endpoint=client};
-                storage.AddRecord(message.channel, endpoint);
-                ConnectMessage answer = new ConnectMessage(){status="CREATED"};
-                client.Write(Encoding.Unicode.GetBytes(JsonSerializer.Serialize(answer)));
+                SettingsEntity settingsChannel = (SettingsEntity)storageSettings.ReadCertainRecords(message.channel);
+                if (!settingsChannel.privateChat){
+                    EndpointEntity endpoint = new EndpointEntity(){name=message.sender,
+                    endpoint=client};
+                    storage.AddRecord(message.channel, endpoint);
+                    ConnectMessage answer = new ConnectMessage(){status="CREATED"};
+                    client.Write(Encoding.Unicode.GetBytes(JsonSerializer.Serialize(answer)));
+                }
+                else{
+                    ConnectMessage answer = new ConnectMessage(){status="PASSWORD", channel=message.channel};
+                    client.Write(Encoding.Unicode.GetBytes(JsonSerializer.Serialize(answer))); 
+                    byte[] buffer = new byte[1024];
+                    int totalSize = client.Read(buffer);
+                    ConnectMessage privateMessage = JsonSerializer.Deserialize<ConnectMessage>(Encoding.Unicode.GetString(buffer,0,totalSize));
+                    if (privateMessage.message.Equals(settingsChannel.password)){
+                        EndpointEntity endpoint = new EndpointEntity(){name=message.sender,
+                        endpoint=client};
+                        storage.AddRecord(message.channel, endpoint);
+                        answer = new ConnectMessage(){status="CREATED"};
+                        client.Write(Encoding.Unicode.GetBytes(JsonSerializer.Serialize(answer))); 
+                    }
+                    else {
+                        answer = new ConnectMessage(){status="FAILED"};
+                        client.Write(Encoding.Unicode.GetBytes(JsonSerializer.Serialize(answer))); 
+                    }
+                }
             }
             else{
-                ConnectMessage answer = new ConnectMessage(){status="FAILED"};
+                ConnectMessage answer = new ConnectMessage(){status="ERROR", message="You don't have privilege"};
                 client.Write(Encoding.Unicode.GetBytes(JsonSerializer.Serialize(answer)));
             }
         }

@@ -1,4 +1,5 @@
 using System.Net.Security;
+using Entity;
 namespace StorageServer{
 interface IStorage<T> {
         void AddRecord(string name,T record);
@@ -6,27 +7,7 @@ interface IStorage<T> {
         object ReadAllRecords();
         object ReadCertainRecords(string name);
 }
-class ConnectMessage(){
-        public string status{get;set;}
-        public string? message{get;set;}
-        public string? channel{get;set;}
-        public string sender{get;set;}
-        public string? IPsender{get;set;} 
-}
-class EndpointEntity : IEquatable<EndpointEntity>
-{
-    public string name{get;set;}
-    public SslStream endpoint{get;set;}
-    public bool Equals(EndpointEntity endpoint){
-        return endpoint.endpoint == this.endpoint && endpoint.name == this.name;
-    }
-}
-class SettingsEntity{
-    public bool privateChat{get;set;}
-    public string? password{get;set;}
-    public List<int> admins{get;set;}
-}
-    class ChannelStorage<T,U> : IStorage<T> where U: EndpointEntity{
+class ChannelStorage<T,U> : IStorage<T> where U: EndpointEntity{
         Dictionary<string, Dictionary<string, List<U>>>? Channels = new Dictionary<string, Dictionary<string, List<U>>>();
         public void AddRecord(string name,T record){
         }
@@ -77,7 +58,7 @@ class SettingsEntity{
             
         }
     }
-    class SettingsChannelStorage<T> : IStorage<T>  
+class SettingsChannelStorage<T> : IStorage<T>  
     {
         Dictionary<string, T>? Keys = new Dictionary<string, T>();
         public void AddRecord(string name,T record){
@@ -90,7 +71,6 @@ class SettingsEntity{
             return Keys;
         }
         public object? ReadCertainRecords(string name){
-            
             T? Settings;
             if (Keys.TryGetValue(name, out Settings)){
                 return Settings;
@@ -102,8 +82,8 @@ class SettingsEntity{
         }
 
     }
-    class PrivilligeSystem{
-        string[] highPrivilage = new string[]{"UPDATE PRIVACY"};
+class PrivilligeSystem{
+        string[] highPrivilage = new string[]{"UPDATE PRIVACY","PRIVATE CHAT", "PUBLIC CHAT"};
         string Username{get;set;}
         string NameChat{get;set;}
         string currentCommand{get;set;}
