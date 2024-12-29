@@ -53,6 +53,15 @@ class ChannelStorage<T,U> : IStorage<T> where U: EndpointEntity{
                 return u;
             }
         }
+        public List<string> ConvertToStringChannel(List<U> channel,List<int> admins,Func<U,int,List<int>,string> converter)
+        {
+            List<string> users = new List<string>(channel.Count);
+            for (int i = 0; i < channel.Count; i++)
+            {
+                users.Add(converter(channel[i],i,admins));
+            }
+            return users;
+        }
         public object ReadAllRecords(){
             return Channels;
             

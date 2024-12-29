@@ -171,12 +171,18 @@ namespace server
         }
         void ShowUsers(SslStream client, ConnectMessage message){
             List<EndpointEntity> users = (List<EndpointEntity>)storage.ReadCertainRecords(message.channel);
-            List<string> usersList = users.ConvertAll(new Converter<EndpointEntity, string>(convertTo));
+            SettingsEntity settings = (SettingsEntity)storageSettings.ReadCertainRecords(message.channel);
+            List<string> usersList =  storage.ConvertToStringChannel(users,settings.admins, convertTo);
             ConnectMessage answer = new ConnectMessage(){status="LIST", listEntity=usersList};
             client.Write(Encoding.Unicode.GetBytes(JsonSerializer.Serialize(answer)));
         }
-        string convertTo(EndpointEntity user){
-            return user.name;
+        string convertTo(EndpointEntity user, int index, List<int> admins){
+            if (admins.Contains(index)){
+                return $"{user.name}(admin)";
+            }
+            else{
+                return user.name;
+            }
 
         }
         void CheckChannel(SslStream client, ConnectMessage message){

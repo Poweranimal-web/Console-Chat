@@ -118,7 +118,6 @@ namespace client
                 byte[] response = Encoding.Unicode.GetBytes(JsonSerializer.Serialize(newMessage));
                 sslStream.Write(response,0,response.Length);
             }
-
         }
         public void AddToChannel(){
             allDone.Reset();
