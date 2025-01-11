@@ -1,20 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "D:\\ConsoleChat\\Server\\Server.csproj": {}
+    "/home/nikita/Old/ConsoleChat/Server/Server.csproj": {}
   },
   "projects": {
-    "D:\\ConsoleChat\\Server\\Server.csproj": {
+    "/home/nikita/Old/ConsoleChat/Server/Server.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\ConsoleChat\\Server\\Server.csproj",
+        "projectUniqueName": "/home/nikita/Old/ConsoleChat/Server/Server.csproj",
         "projectName": "Server",
-        "projectPath": "D:\\ConsoleChat\\Server\\Server.csproj",
-        "packagesPath": "C:\\Users\\Nikita\\.nuget\\packages\\",
-        "outputPath": "D:\\ConsoleChat\\Server\\obj\\",
+        "projectPath": "/home/nikita/Old/ConsoleChat/Server/Server.csproj",
+        "packagesPath": "/home/nikita/.nuget/packages/",
+        "outputPath": "/home/nikita/Old/ConsoleChat/Server/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\Nikita\\AppData\\Roaming\\NuGet\\NuGet.Config"
+          "/home/nikita/.nuget/NuGet/NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net8.0"
@@ -58,7 +58,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.303/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/8.0.404/PortableRuntimeIdentifierGraph.json"
         }
       }
     }

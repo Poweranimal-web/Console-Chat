@@ -5,6 +5,7 @@ namespace Entity{
         public bool privateChat{get;set;}
         public string? password{get;set;}
         public List<int> admins{get;set;}
+        public List<SslStream>? UserBan{get;set;}
     }
     class ConnectMessage(){
             public string status{get;set;}
@@ -12,6 +13,7 @@ namespace Entity{
             public string? channel{get;set;}
             public string sender{get;set;}
             public string? IPsender{get;set;} 
+            public int NumberInformation{get;set;}
             public List<string>? listEntity{get;set;}
     }
     class EndpointEntity : IEquatable<EndpointEntity>

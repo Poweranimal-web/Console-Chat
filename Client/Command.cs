@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Net.Sockets;
 using Storage;
@@ -111,6 +112,13 @@ class Command{
                             break;
 
                         }
+                        else if(message.Equals("ban")){
+                            Console.Write("Enter index of user: ");
+                            textConsole = new StringBuilder("Enter index of user: ");
+                            StringBuilder index = new StringBuilder(Console.ReadLine());
+                            client.BanUserRequest(index.ToString());
+                            break;
+                        }
                         else{
                             client.SendMessageToChannel();
                             goto case "chat message";
@@ -129,12 +137,24 @@ class Command{
                     case "test":
                         client.TestRequest();
                         break;
-                        
-                    
-
             }
         }
         
-    } 
+    }
+    // void DefinedOS(OSPlatform os){
+    //         OSPlatform os = OsDetector.GetOS();
+    //         if (os.Equals(OSPlatform.Windows)){
+    //             #undef OSX
+    //             #undef LINUX
+    //         }
+    //         else if (os.Equals(OSPlatform.Linux)){
+    //             #undef OSX
+    //             #undef WINDOWS
+    //         }
+    //         else if (os.Equals(OSPlatform.OSX)){
+    //             #undef LINUX
+    //             #undef WINDOWS
+    //         }
+    // } 
 }
 }

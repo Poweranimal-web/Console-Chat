@@ -8,7 +8,8 @@ namespace Model {
         public string? message{get;set;}
         public string? channel{get;set;}
         public string sender{get;set;} 
-        public string? IPsender{get;set;} 
+        public string? IPsender{get;set;}
+        public int NumberInformation{get;set;}
         public List<string>? listEntity{get;set;}
     }
 }

@@ -8,6 +8,7 @@ using Model;
 using System.Security.Authentication;
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
+using System.Runtime.InteropServices;
 namespace client
 {
     interface INetworkClient
@@ -61,6 +62,23 @@ namespace client
                 ConnectToServer();
             }
         }
+        // void DefinedOS(OSPlatform os){
+        //     void DefinedOS(OSPlatform os){
+        //     OSPlatform os = OsDetector.GetOS();
+        //         if (os.Equals(OSPlatform.Windows)){
+        //             #undef OSX
+        //             #undef LINUX
+        //         }
+        //         else if (os.Equals(OSPlatform.Linux)){
+        //             #undef OSX
+        //             #undef WINDOWS
+        //         }
+        //         else if (os.Equals(OSPlatform.OSX)){
+        //             #undef LINUX
+        //             #undef WINDOWS
+        //         }
+        //     } 
+        // }
         public byte ConnectTo(){
             try
             {
@@ -119,6 +137,14 @@ namespace client
                 sslStream.Write(response,0,response.Length);
             }
         }
+        public void BanUserRequest(string index){
+            ConnectMessage newMessage = new ConnectMessage(){status="BAN", 
+            channel=channelCurrent.ToString(), NumberInformation=int.Parse(index)-1, 
+            IPsender=IP.ToString(), sender=nickname.ToString()};
+            byte[] response = Encoding.Unicode.GetBytes(JsonSerializer.Serialize(newMessage));
+            sslStream.Write(response,0,response.Length);
+
+        }
         public void AddToChannel(){
             allDone.Reset();
             ConnectMessage newMessage = new ConnectMessage(){status="ADD", 
@@ -159,7 +185,11 @@ namespace client
                     int dataLength = sslStream.Read(buffer);
                     Message = JsonSerializer.Deserialize<ConnectMessage>(Encoding.Unicode.GetString(buffer,0,dataLength));
                     if (dataLength > 0 && Message.status.Equals("MESSAGE") && !Message.IPsender.ToString().Equals(IP.ToString())){
-                        render.RenderRecievedMessage(Message, bufferText);
+                        #if WINDOWS
+                            render.RenderRecievedMessage(Message, bufferText);
+                        #elif LINUX 
+                            render.RenderLinuxRecievedMessage(Message, bufferText);
+                        #endif
                     }
                     else if (Message.status.Equals("OK")) {
                         allDone.Set();
@@ -177,13 +207,17 @@ namespace client
                         render.RenderListMessage(Message, bufferText);
                     }
                     else if (Message.status.Equals("SETTED")){
-                        render.RenderRecievedMessage(Message, bufferText);
-                    }
-                    else if (Message.status.Equals("SETTED")){
-                        render.RenderRecievedMessage(Message, bufferText);
+                        #if WINDOWS
+                            render.RenderRecievedMessage(Message, bufferText);
+                        #elif LINUX 
+                            render.RenderLinuxRecievedMessage(Message, bufferText);
+                        #endif
                     }
                     else if (Message.status.Equals("PASSWORD")){
                         allDone.Set();
+                    }
+                    else if (Message.status.Equals("BAN")){
+                        chatsStorage.DeleteRecord(Message.channel);
                     }
             }
             

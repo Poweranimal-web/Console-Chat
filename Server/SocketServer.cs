@@ -43,7 +43,7 @@ namespace server
             endpoint = new IPEndPoint(Host, 9090);
             byte answer = ListenTo();
             if (answer==0){
-                serverCertificate = new X509Certificate2("D:/ConsoleChat/keys/server.pfx","123");
+                serverCertificate = new X509Certificate2("/home/nikita/Old/ConsoleChat/keys/server.pfx","123");
                 ListenIncomeMessage();
             }
         }
@@ -115,10 +115,29 @@ namespace server
             else if(message.status.Equals("PUBLIC CHAT")){
                 ChangePublicChat(handler, message);
             }
+            else if(message.status.Equals("PUBLIC CHAT")){
+                ChangePublicChat(handler, message);
+            }
+            else if(message.status.Equals("BAN")){
+                BanUser(handler, message);
+            }
         }
         void ResponseFailServer(SslStream client,ConnectMessage message){
             ConnectMessage answer = new ConnectMessage(){status="ERROR", message="You don't have privilege"};
             client.Write(Encoding.Unicode.GetBytes(JsonSerializer.Serialize(answer)));
+        }
+        void BanUser(SslStream client,ConnectMessage message){
+            List<EndpointEntity> listConnections = (List<EndpointEntity>)storage.ReadCertainRecords(message.channel);
+            SettingsEntity settings = (SettingsEntity)storageSettings.ReadCertainRecords(message.channel);
+            if (!settings.UserBan.Contains(listConnections[message.NumberInformation].endpoint)){
+                ConnectMessage answer = new ConnectMessage(){status="BAN", channel=message.channel}; // message for deleting chat from local storage to user was banned
+                listConnections[message.NumberInformation].endpoint.Write(Encoding.Unicode.GetBytes(JsonSerializer.Serialize(answer)));
+                StringBuilder banMessage = new StringBuilder($"{listConnections[message.NumberInformation].name} was kicked from {message.channel}");
+                message.message = banMessage.ToString();
+                SendMessageToChannel(message.channel, message); // To notify all other users who was banned
+                settings.UserBan.Add(listConnections[message.NumberInformation].endpoint); // add in black list
+                storage.DeleteRecord(message.channel, (byte)message.NumberInformation); // delete from chat in order to he cannot get messages fro channel
+            }
         }
         void ChangePrivateChat(SslStream client,ConnectMessage message){
             SettingsEntity settings = (SettingsEntity)storageSettings.ReadCertainRecords(message.channel);
@@ -161,7 +180,8 @@ namespace server
                 bool channelIsExist = storage.AddRecord(message.channel, endpoint);
                 if (!channelIsExist){
                     List<int> admins = new List<int>(2){0};
-                    SettingsEntity settingsEntity = new SettingsEntity(){privateChat=false, admins=admins};
+                    List<SslStream> listBans = new List<SslStream>(){};
+                    SettingsEntity settingsEntity = new SettingsEntity(){privateChat=false, admins=admins, UserBan=listBans};
                     storageSettings.AddRecord(message.channel, settingsEntity);
                     SettingsEntity? Entity = (SettingsEntity)storageSettings.ReadCertainRecords(message.channel);
                 }

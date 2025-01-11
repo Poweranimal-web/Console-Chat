@@ -8,19 +8,19 @@
     "net8.0": []
   },
   "packageFolders": {
-    "C:\\Users\\Nikita\\.nuget\\packages\\": {}
+    "/home/nikita/.nuget/packages/": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\ConsoleChat\\Client\\ConsoleChat.csproj",
+      "projectUniqueName": "/home/nikita/Old/ConsoleChat/Client/ConsoleChat.csproj",
       "projectName": "ConsoleChat",
-      "projectPath": "D:\\ConsoleChat\\Client\\ConsoleChat.csproj",
-      "packagesPath": "C:\\Users\\Nikita\\.nuget\\packages\\",
-      "outputPath": "D:\\ConsoleChat\\Client\\obj\\",
+      "projectPath": "/home/nikita/Old/ConsoleChat/Client/ConsoleChat.csproj",
+      "packagesPath": "/home/nikita/.nuget/packages/",
+      "outputPath": "/home/nikita/Old/ConsoleChat/Client/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "C:\\Users\\Nikita\\AppData\\Roaming\\NuGet\\NuGet.Config"
+        "/home/nikita/.nuget/NuGet/NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net8.0"
@@ -64,7 +64,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.303/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/8.0.404/PortableRuntimeIdentifierGraph.json"
       }
     }
   }

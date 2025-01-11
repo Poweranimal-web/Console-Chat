@@ -92,7 +92,7 @@ class SettingsChannelStorage<T> : IStorage<T>
 
     }
 class PrivilligeSystem{
-        string[] highPrivilage = new string[]{"UPDATE PRIVACY","PRIVATE CHAT", "PUBLIC CHAT"};
+        string[] highPrivilage = new string[]{"UPDATE PRIVACY","PRIVATE CHAT", "PUBLIC CHAT", "BAN"};
         string Username{get;set;}
         string NameChat{get;set;}
         string currentCommand{get;set;}
