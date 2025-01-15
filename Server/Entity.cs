@@ -3,6 +3,7 @@ using System.Net.Security;
 namespace Entity{
     class SettingsEntity{
         public bool privateChat{get;set;}
+        public bool groupChat{get;set;}
         public string? password{get;set;}
         public List<int> admins{get;set;}
         public List<SslStream>? UserBan{get;set;}
@@ -15,6 +16,7 @@ namespace Entity{
             public string? IPsender{get;set;} 
             public int NumberInformation{get;set;}
             public List<string>? listEntity{get;set;}
+            public bool isGroupChat{get;set;}
     }
     class EndpointEntity : IEquatable<EndpointEntity>
     {

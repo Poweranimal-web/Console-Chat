@@ -62,23 +62,6 @@ namespace client
                 ConnectToServer();
             }
         }
-        // void DefinedOS(OSPlatform os){
-        //     void DefinedOS(OSPlatform os){
-        //     OSPlatform os = OsDetector.GetOS();
-        //         if (os.Equals(OSPlatform.Windows)){
-        //             #undef OSX
-        //             #undef LINUX
-        //         }
-        //         else if (os.Equals(OSPlatform.Linux)){
-        //             #undef OSX
-        //             #undef WINDOWS
-        //         }
-        //         else if (os.Equals(OSPlatform.OSX)){
-        //             #undef LINUX
-        //             #undef WINDOWS
-        //         }
-        //     } 
-        // }
         public byte ConnectTo(){
             try
             {
@@ -145,10 +128,11 @@ namespace client
             sslStream.Write(response,0,response.Length);
 
         }
-        public void AddToChannel(){
+        public void AddToChannel(bool isGroupChat){
             allDone.Reset();
             ConnectMessage newMessage = new ConnectMessage(){status="ADD", 
-            channel=channelCurrent.ToString(), sender=nickname.ToString()};
+            channel=channelCurrent.ToString(), sender=nickname.ToString(),
+            isGroupChat=isGroupChat};
             byte[] response = Encoding.Unicode.GetBytes(JsonSerializer.Serialize(newMessage));
             sslStream.Write(response,0,response.Length);
         }
@@ -163,7 +147,7 @@ namespace client
             nickname = new StringBuilder(Console.ReadLine());
             IP = new StringBuilder(clientSocket.LocalEndPoint.ToString());
             ConnectMessage message = new ConnectMessage(){status="CONNECT", channel=nickname.ToString(),
-            sender=nickname.ToString()};
+            sender=nickname.ToString(), isGroupChat=false};
             byte[] response = Encoding.Unicode.GetBytes(JsonSerializer.Serialize(message));
             sslStream.Write(response,0,response.Length);
             Console.WriteLine("Wait...");
@@ -183,11 +167,18 @@ namespace client
             RenderMessages render = new RenderMessages();
             while(true){
                     int dataLength = sslStream.Read(buffer);
+                    #if WINDOWS
                     Message = JsonSerializer.Deserialize<ConnectMessage>(Encoding.Unicode.GetString(buffer,0,dataLength));
+                    #elif LINUX
+                    string unicodeString = Encoding.Unicode.GetString(buffer,0,dataLength);
+                    byte[] utf8Bytes = Encoding.UTF8.GetBytes(unicodeString);
+                    //Console.WriteLine(Encoding.UTF8.GetString(utf8Bytes,0,utf8Bytes.Length));
+                    Message = JsonSerializer.Deserialize<ConnectMessage>(Encoding.UTF8.GetString(utf8Bytes,0,utf8Bytes.Length));
+                    #endif
                     if (dataLength > 0 && Message.status.Equals("MESSAGE") && !Message.IPsender.ToString().Equals(IP.ToString())){
                         #if WINDOWS
                             render.RenderRecievedMessage(Message, bufferText);
-                        #elif LINUX 
+                        #elif LINUX
                             render.RenderLinuxRecievedMessage(Message, bufferText);
                         #endif
                     }

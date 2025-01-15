@@ -54,8 +54,6 @@ namespace Storage{
         public void RenderLinuxRecievedMessage(ConnectMessage Message, StringBuilder buffer){
             int cursorTopPosition = Console.CursorTop;
             Console.CursorLeft = 0;
-            // Console.Write(new string(' ', Console.WindowWidth));
-            // Console.CursorLeft = 0;
             Console.Write($"{Message.IPsender}:{Message.message}\n");
             Console.Write(buffer.ToString());           
         }

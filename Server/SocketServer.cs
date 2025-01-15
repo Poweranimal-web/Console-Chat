@@ -64,6 +64,7 @@ namespace server
         public void SendMessageToChannel(string name, ConnectMessage message){
             List<EndpointEntity> listConnections = (List<EndpointEntity>)storage.ReadCertainRecords(name);
             foreach(EndpointEntity connection in listConnections){
+                Console.WriteLine(connection.name);
                 connection.endpoint.Write(Encoding.Unicode.GetBytes(JsonSerializer.Serialize(message)));
             }
         }
@@ -181,11 +182,11 @@ namespace server
                 if (!channelIsExist){
                     List<int> admins = new List<int>(2){0};
                     List<SslStream> listBans = new List<SslStream>(){};
-                    SettingsEntity settingsEntity = new SettingsEntity(){privateChat=false, admins=admins, UserBan=listBans};
+                    SettingsEntity settingsEntity = new SettingsEntity(){privateChat=false, admins=admins, UserBan=listBans, groupChat=message.isGroupChat};
                     storageSettings.AddRecord(message.channel, settingsEntity);
                     SettingsEntity? Entity = (SettingsEntity)storageSettings.ReadCertainRecords(message.channel);
                 }
-                ConnectMessage answer = new ConnectMessage(){status="CREATED"};
+                ConnectMessage answer = new ConnectMessage(){status="CREATED", channel=message.channel};
                 client.Write(Encoding.Unicode.GetBytes(JsonSerializer.Serialize(answer)));
             }
         }
@@ -205,15 +206,24 @@ namespace server
             }
 
         }
+        void CheckGroupChat(SettingsEntity settings, SslStream client, ConnectMessage message){
+            if (settings.groupChat){
+                EndpointEntity endpoint = new EndpointEntity(){name=message.sender,
+                endpoint=client};
+                storage.AddRecord(message.channel, endpoint);
+                ConnectMessage answer = new ConnectMessage(){status="CREATED"};
+                client.Write(Encoding.Unicode.GetBytes(JsonSerializer.Serialize(answer)));
+            }
+            else{
+                ConnectMessage answer = new ConnectMessage(){status="CREATED"};
+                client.Write(Encoding.Unicode.GetBytes(JsonSerializer.Serialize(answer)));
+            }
+        }
         void CheckChannel(SslStream client, ConnectMessage message){
             if (storage.IsExist(message.channel)){
                 SettingsEntity settingsChannel = (SettingsEntity)storageSettings.ReadCertainRecords(message.channel);
                 if (!settingsChannel.privateChat){
-                    EndpointEntity endpoint = new EndpointEntity(){name=message.sender,
-                    endpoint=client};
-                    storage.AddRecord(message.channel, endpoint);
-                    ConnectMessage answer = new ConnectMessage(){status="CREATED"};
-                    client.Write(Encoding.Unicode.GetBytes(JsonSerializer.Serialize(answer)));
+                    CheckGroupChat(settingsChannel, client, message);
                 }
                 else{
                     ConnectMessage answer = new ConnectMessage(){status="PASSWORD", channel=message.channel};
@@ -222,11 +232,7 @@ namespace server
                     int totalSize = client.Read(buffer);
                     ConnectMessage privateMessage = JsonSerializer.Deserialize<ConnectMessage>(Encoding.Unicode.GetString(buffer,0,totalSize));
                     if (privateMessage.message.Equals(settingsChannel.password)){
-                        EndpointEntity endpoint = new EndpointEntity(){name=message.sender,
-                        endpoint=client};
-                        storage.AddRecord(message.channel, endpoint);
-                        answer = new ConnectMessage(){status="CREATED"};
-                        client.Write(Encoding.Unicode.GetBytes(JsonSerializer.Serialize(answer))); 
+                        CheckGroupChat(settingsChannel, client, message);
                     }
                     else {
                         answer = new ConnectMessage(){status="FAILED"};

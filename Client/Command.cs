@@ -1,4 +1,3 @@
-using System.Runtime.InteropServices;
 using System.Text;
 using System.Net.Sockets;
 using Storage;
@@ -71,8 +70,12 @@ class Command{
                         Console.Write("Enter Name of Chat: ");
                         textConsole = new StringBuilder("Enter Name of Chat: ");
                         nameNewChat = new StringBuilder(Console.ReadLine());
+                        Console.Write("Is a group chat: ");
+                        textConsole = new StringBuilder("Is a group chat: ");
+                        StringBuilder isGroupChat = new StringBuilder(Console.ReadLine());
+                        bool isGroupChatBool = isGroupChat.ToString().ToUpper().Equals("YES")?true:false; 
                         channel = nameNewChat;
-                        client.AddToChannel();
+                        client.AddToChannel(isGroupChatBool);
                         thread.WaitOne();
                         if (recievedMessage.status.Equals("CREATED")){
                             chat = new Chat(){name=nameNewChat.ToString()};
@@ -141,20 +144,5 @@ class Command{
         }
         
     }
-    // void DefinedOS(OSPlatform os){
-    //         OSPlatform os = OsDetector.GetOS();
-    //         if (os.Equals(OSPlatform.Windows)){
-    //             #undef OSX
-    //             #undef LINUX
-    //         }
-    //         else if (os.Equals(OSPlatform.Linux)){
-    //             #undef OSX
-    //             #undef WINDOWS
-    //         }
-    //         else if (os.Equals(OSPlatform.OSX)){
-    //             #undef LINUX
-    //             #undef WINDOWS
-    //         }
-    // } 
 }
 }
