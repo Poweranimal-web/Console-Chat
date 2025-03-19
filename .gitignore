@@ -1,3 +1,4 @@
-ConsoleChat/keys/cert.pem
-ConsoleChat/keys/key.pem
-ConsoleChat/keys/server.pfx
+keys/cert.pem
+keys/key.pem
+keys/server.pfx
+

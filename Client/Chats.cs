@@ -43,7 +43,7 @@ namespace Storage{
         }
     }
     
-    class RenderMessages{
+    partial class RenderMessages{
         bool isFirstMessage = true;
         public void RenderMessage(ConnectMessage Message){
             Console.CursorTop = Console.CursorTop;
@@ -54,8 +54,8 @@ namespace Storage{
             Console.CursorLeft = 0;
             Console.Write($"You:{Message.message}\n");
         }
-        [DllImport("/home/nikita/ConsoleChat/Client/Cursor/cursor.dll")]
-        public unsafe static extern bool getCursorPosition(int* row, int* col);
+        [LibraryImport("/home/nikita/ConsoleChat/Client/Cursor/cursor.dll")]
+        public unsafe static partial void getCursorPosition(int* row, int* col);
         public unsafe void RenderLinuxRecievedMessage(ConnectMessage Message, StringBuilder buffer){
             
             int Row = 0;
