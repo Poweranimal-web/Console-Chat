@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "bRvGClSpMuY=",
+  "dgSpecHash": "Sd1PX4tBVfQ=",
   "success": true,
-  "projectFilePath": "/home/nikita/Old/ConsoleChat/Server/Server.csproj",
+  "projectFilePath": "/home/nikita/ConsoleChat/Server/Server.csproj",
   "expectedPackageFiles": [],
   "logs": []
 }

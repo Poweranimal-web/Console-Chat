@@ -64,9 +64,9 @@ namespace server
         public void SendMessageToChannel(string name, ConnectMessage message){
             List<EndpointEntity> listConnections = (List<EndpointEntity>)storage.ReadCertainRecords(name);
             foreach(EndpointEntity connection in listConnections){
-                Console.WriteLine(connection.name);
                 connection.endpoint.Write(Encoding.Unicode.GetBytes(JsonSerializer.Serialize(message)));
             }
+            Console.WriteLine($"Successfully sent: {message.message}");
         }
 
         void AcceptCallBack(IAsyncResult ar){

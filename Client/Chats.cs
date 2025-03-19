@@ -1,6 +1,8 @@
 using System.Collections;
+using System.Runtime.InteropServices;
 using Model;
 using System.Text;
+using System.Diagnostics;
 namespace Storage{
     interface IStorage{
         void AddRecord(string name,object record);
@@ -40,10 +42,11 @@ namespace Storage{
             }
         }
     }
+    
     class RenderMessages{
         bool isFirstMessage = true;
         public void RenderMessage(ConnectMessage Message){
-            Console.CursorTop = Console.CursorTop-1;
+            Console.CursorTop = Console.CursorTop;
             Console.CursorLeft = 0;
             byte cursorTopPosition = (byte)Console.CursorTop;
             Console.Write(new string(' ', Console.WindowWidth)); 
@@ -51,11 +54,20 @@ namespace Storage{
             Console.CursorLeft = 0;
             Console.Write($"You:{Message.message}\n");
         }
-        public void RenderLinuxRecievedMessage(ConnectMessage Message, StringBuilder buffer){
-            int cursorTopPosition = Console.CursorTop;
-            Console.CursorLeft = 0;
-            Console.Write($"{Message.IPsender}:{Message.message}\n");
-            Console.Write(buffer.ToString());           
+        [DllImport("/home/nikita/ConsoleChat/Client/Cursor/cursor.dll")]
+        public unsafe static extern bool getCursorPosition(int* row, int* col);
+        public unsafe void RenderLinuxRecievedMessage(ConnectMessage Message, StringBuilder buffer){
+            
+            int Row = 0;
+            int Col = 0;
+            int* row = &Row;
+            int* col = &Col;
+            getCursorPosition(row,col);
+            Console.SetCursorPosition(0, *row);
+            Console.Write(new string(' ', Console.WindowWidth));
+            Console.SetCursorPosition(0, *row);
+            Console.Write($"{Message.sender}:{Message.message}\n");
+            Console.Write(buffer.ToString());
         }
         public void RenderRecievedMessage(ConnectMessage Message, StringBuilder buffer){
             int cursorTopPosition = Console.CursorTop;

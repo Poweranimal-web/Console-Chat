@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "/home/nikita/Old/ConsoleChat/Server/Server.csproj": {}
+    "/home/nikita/ConsoleChat/Server/Server.csproj": {}
   },
   "projects": {
-    "/home/nikita/Old/ConsoleChat/Server/Server.csproj": {
+    "/home/nikita/ConsoleChat/Server/Server.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/home/nikita/Old/ConsoleChat/Server/Server.csproj",
+        "projectUniqueName": "/home/nikita/ConsoleChat/Server/Server.csproj",
         "projectName": "Server",
-        "projectPath": "/home/nikita/Old/ConsoleChat/Server/Server.csproj",
+        "projectPath": "/home/nikita/ConsoleChat/Server/Server.csproj",
         "packagesPath": "/home/nikita/.nuget/packages/",
-        "outputPath": "/home/nikita/Old/ConsoleChat/Server/obj/",
+        "outputPath": "/home/nikita/ConsoleChat/Server/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "/home/nikita/.nuget/NuGet/NuGet.Config"
@@ -58,7 +58,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/8.0.404/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/8.0.406/PortableRuntimeIdentifierGraph.json"
         }
       }
     }

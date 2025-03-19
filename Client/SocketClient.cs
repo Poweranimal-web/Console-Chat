@@ -59,6 +59,7 @@ namespace client
             if (res == 0){
                 receiveMessageThread = new Thread(RecieveMessage);
                 receiveMessageThread.Start();
+
                 ConnectToServer();
             }
         }
@@ -172,15 +173,15 @@ namespace client
                     #elif LINUX
                     string unicodeString = Encoding.Unicode.GetString(buffer,0,dataLength);
                     byte[] utf8Bytes = Encoding.UTF8.GetBytes(unicodeString);
-                    //Console.WriteLine(Encoding.UTF8.GetString(utf8Bytes,0,utf8Bytes.Length));
                     Message = JsonSerializer.Deserialize<ConnectMessage>(Encoding.UTF8.GetString(utf8Bytes,0,utf8Bytes.Length));
                     #endif
                     if (dataLength > 0 && Message.status.Equals("MESSAGE") && !Message.IPsender.ToString().Equals(IP.ToString())){
                         #if WINDOWS
                             render.RenderRecievedMessage(Message, bufferText);
                         #elif LINUX
-                            render.RenderLinuxRecievedMessage(Message, bufferText);
+                            render.RenderLinuxRecievedMessage(Message, bufferText); 
                         #endif
+                        // Console.WriteLine(Message.message);
                     }
                     else if (Message.status.Equals("OK")) {
                         allDone.Set();
