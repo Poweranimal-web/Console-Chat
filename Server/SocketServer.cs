@@ -241,7 +241,7 @@ namespace server
                 }
             }
             else{
-                ConnectMessage answer = new ConnectMessage(){status="ERROR", message="You don't have privilege"};
+                ConnectMessage answer = new ConnectMessage(){status="ERROR", message="Chat doesn't exist. You can create new one."};
                 client.Write(Encoding.Unicode.GetBytes(JsonSerializer.Serialize(answer)));
             }
         }

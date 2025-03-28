@@ -45,13 +45,15 @@ namespace Storage{
     
     partial class RenderMessages{
         bool isFirstMessage = true;
-        public void RenderMessage(ConnectMessage Message){
-            Console.CursorTop = Console.CursorTop;
-            Console.CursorLeft = 0;
-            byte cursorTopPosition = (byte)Console.CursorTop;
-            Console.Write(new string(' ', Console.WindowWidth)); 
-            Console.CursorTop = cursorTopPosition;
-            Console.CursorLeft = 0;
+        public unsafe void RenderMessage(ConnectMessage Message){
+            int Row = 0;
+            int Col = 0;
+            int* row = &Row;
+            int* col = &Col;
+            getCursorPosition(row,col);
+            Console.SetCursorPosition(0, *row-200);
+            Console.Write(new string(' ', Console.WindowWidth));
+            Console.SetCursorPosition(0, *row-200);
             Console.Write($"You:{Message.message}\n");
         }
         [LibraryImport("/home/nikita/ConsoleChat/Client/Cursor/cursor.dll")]
@@ -63,9 +65,9 @@ namespace Storage{
             int* row = &Row;
             int* col = &Col;
             getCursorPosition(row,col);
-            Console.SetCursorPosition(0, *row);
+            Console.SetCursorPosition(0, *row-200);
             Console.Write(new string(' ', Console.WindowWidth));
-            Console.SetCursorPosition(0, *row);
+            Console.SetCursorPosition(0, *row-200);
             Console.Write($"{Message.sender}:{Message.message}\n");
             Console.Write(buffer.ToString());
         }

@@ -1,10 +1,10 @@
 {
     "configurations": [
         {
-            "name": "C#: Client Debug",
+            "name": "C#: Server Debug",
             "type": "dotnet",
             "request": "launch",
-            "projectPath": "${workspaceFolder}/Client/ConsoleChat.csproj"
+            "projectPath": "${workspaceFolder}/Server/Server.csproj"
         },
                 
     ],

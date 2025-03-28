@@ -193,7 +193,11 @@ namespace client
                         allDone.Set();
                     }
                     else if (Message.status.Equals("ERROR")){
-                        render.RenderRecievedMessage(Message, bufferText);
+                        #if WINDOWS
+                            render.RenderRecievedMessage(Message, bufferText);
+                        #elif LINUX
+                            render.RenderLinuxRecievedMessage(Message, bufferText); 
+                        #endif
                     }
                     else if (Message.status.Equals("LIST")){
                         render.RenderListMessage(Message, bufferText);
