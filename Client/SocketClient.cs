@@ -181,7 +181,6 @@ namespace client
                         #elif LINUX
                             render.RenderLinuxRecievedMessage(Message, bufferText); 
                         #endif
-                        // Console.WriteLine(Message.message);
                     }
                     else if (Message.status.Equals("OK")) {
                         allDone.Set();
@@ -200,7 +199,11 @@ namespace client
                         #endif
                     }
                     else if (Message.status.Equals("LIST")){
-                        render.RenderListMessage(Message, bufferText);
+                        #if WINDOWS
+                            render.RenderListMessage(Message, bufferText);
+                        #elif LINUX 
+                            render.RenderLinuxListMessage(Message, bufferText);
+                        #endif
                     }
                     else if (Message.status.Equals("SETTED")){
                         #if WINDOWS
@@ -213,7 +216,14 @@ namespace client
                         allDone.Set();
                     }
                     else if (Message.status.Equals("BAN")){
+                        Console.WriteLine("You were banned");
                         chatsStorage.DeleteRecord(Message.channel);
+                        if (channelCurrent.ToString() == Message.channel){
+                            channelCurrent = new StringBuilder();
+                            command = new Command();
+                            command.RunConsole(ref clientSocket, ref textMessage, ref channelCurrent,
+                            ref posCursor,ref bufferText,ref allDone,ref Message,chatsStorage, this);
+                        }
                     }
             }
             

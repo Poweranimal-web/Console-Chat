@@ -7,6 +7,7 @@ using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
 using System.Security.Authentication;
 using Entity;
+using System.Text.Json.Serialization;
 namespace server
 {
     interface INetworkServer
@@ -62,9 +63,10 @@ namespace server
             return 0;
         }
         public void SendMessageToChannel(string name, ConnectMessage message){
+            JsonSerializerOptions options = new JsonSerializerOptions(){DefaultIgnoreCondition=JsonIgnoreCondition.WhenWritingNull};
             List<EndpointEntity> listConnections = (List<EndpointEntity>)storage.ReadCertainRecords(name);
             foreach(EndpointEntity connection in listConnections){
-                connection.endpoint.Write(Encoding.Unicode.GetBytes(JsonSerializer.Serialize(message)));
+                connection.endpoint.Write(Encoding.Unicode.GetBytes(JsonSerializer.Serialize(message,options)));
             }
             Console.WriteLine($"Successfully sent: {message.message}");
         }
@@ -131,9 +133,12 @@ namespace server
             List<EndpointEntity> listConnections = (List<EndpointEntity>)storage.ReadCertainRecords(message.channel);
             SettingsEntity settings = (SettingsEntity)storageSettings.ReadCertainRecords(message.channel);
             if (!settings.UserBan.Contains(listConnections[message.NumberInformation].endpoint)){
-                ConnectMessage answer = new ConnectMessage(){status="BAN", channel=message.channel}; // message for deleting chat from local storage to user was banned
+                ConnectMessage answer = new ConnectMessage(){status="BAN", channel=message.channel, 
+                message=$"You are banned in {message.channel}", NumberInformation=0, isGroupChat=true}; // message for deleting chat from local storage to user who was banned
                 listConnections[message.NumberInformation].endpoint.Write(Encoding.Unicode.GetBytes(JsonSerializer.Serialize(answer)));
+                Console.WriteLine($"Serialized data: {JsonSerializer.Serialize(answer)}");
                 StringBuilder banMessage = new StringBuilder($"{listConnections[message.NumberInformation].name} was kicked from {message.channel}");
+                message.status = "MESSAGE";
                 message.message = banMessage.ToString();
                 SendMessageToChannel(message.channel, message); // To notify all other users who was banned
                 settings.UserBan.Add(listConnections[message.NumberInformation].endpoint); // add in black list

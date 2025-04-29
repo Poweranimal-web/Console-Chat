@@ -51,9 +51,9 @@ namespace Storage{
             int* row = &Row;
             int* col = &Col;
             getCursorPosition(row,col);
-            Console.SetCursorPosition(0, *row-200);
+            Console.SetCursorPosition(0, *row);
             Console.Write(new string(' ', Console.WindowWidth));
-            Console.SetCursorPosition(0, *row-200);
+            Console.SetCursorPosition(0, *row);
             Console.Write($"You:{Message.message}\n");
         }
         [LibraryImport("/home/nikita/ConsoleChat/Client/Cursor/cursor.dll")]
@@ -65,9 +65,9 @@ namespace Storage{
             int* row = &Row;
             int* col = &Col;
             getCursorPosition(row,col);
-            Console.SetCursorPosition(0, *row-200);
+            Console.SetCursorPosition(0, *row);
             Console.Write(new string(' ', Console.WindowWidth));
-            Console.SetCursorPosition(0, *row-200);
+            Console.SetCursorPosition(0, *row);
             Console.Write($"{Message.sender}:{Message.message}\n");
             Console.Write(buffer.ToString());
         }
@@ -91,6 +91,21 @@ namespace Storage{
                 Console.Write($"{i+1}.{Message.listEntity[i]}\n");                
             }
             Console.Write(buffer.ToString());        
+        }
+        public unsafe void RenderLinuxListMessage(ConnectMessage Message, StringBuilder buffer){
+            int Row = 0;
+            int Col = 0;
+            int* row = &Row;
+            int* col = &Col;
+            getCursorPosition(row,col);
+            Console.SetCursorPosition(0, *row);
+            Console.Write(new string(' ', Console.WindowWidth));
+            Console.SetCursorPosition(0, *row);
+            Console.Write("List:\n");
+            for(int i =0;i<Message.listEntity.Count;i++){
+                Console.Write($"{i+1}.{Message.listEntity[i]}\n");                
+            }
+            Console.Write(buffer.ToString());       
         }
     }
 }

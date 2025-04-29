@@ -90,41 +90,46 @@ class Command{
                         Console.Write("Enter message: ");
                         textConsole = new StringBuilder("Enter message: ");
                         message = new StringBuilder(Console.ReadLine());
-                        if (message.Equals("exit")){
-                            break;
-                        }
-                        else if (message.Equals("show users")){
-                            client.ShowAllUsersRequest();
-                            break;
-                        }
-                        else if (message.Equals("set private")){
-                            Console.Write("Do you want private chat(yes/no): ");
-                            textConsole = new StringBuilder("Do you want private chat(yes/no): ");
-                            StringBuilder privacy = new StringBuilder(Console.ReadLine());
-                            if (privacy.Equals("yes")){
-                                Console.Write("Enter password: ");
-                                textConsole = new StringBuilder("Enter password: ");
-                                StringBuilder password = new StringBuilder(Console.ReadLine());
-                                client.ChangePrivacySettingsRequest(true, password.ToString());
+                        if (!recievedMessage.status.Equals("BAN")){
+                            if (message.Equals("exit")){
                                 break;
                             }
-                            else if(privacy.Equals("no")){
-                                client.ChangePrivacySettingsRequest(false);
-                                break;
+                            else if (message.Equals("show users")){
+                                client.ShowAllUsersRequest();
+                                goto case "chat message";
                             }
-                            break;
+                            else if (message.Equals("set private")){
+                                Console.Write("Do you want private chat(yes/no): ");
+                                textConsole = new StringBuilder("Do you want private chat(yes/no): ");
+                                StringBuilder privacy = new StringBuilder(Console.ReadLine());
+                                if (privacy.Equals("yes")){
+                                    Console.Write("Enter password: ");
+                                    textConsole = new StringBuilder("Enter password: ");
+                                    StringBuilder password = new StringBuilder(Console.ReadLine());
+                                    client.ChangePrivacySettingsRequest(true, password.ToString());
+                                    goto case "chat message";
+                                }
+                                else if(privacy.Equals("no")){
+                                    client.ChangePrivacySettingsRequest(false);
+                                    goto case "chat message";
+                                }
+                                goto case "chat message";
 
-                        }
-                        else if(message.Equals("ban")){
-                            Console.Write("Enter index of user: ");
-                            textConsole = new StringBuilder("Enter index of user: ");
-                            StringBuilder index = new StringBuilder(Console.ReadLine());
-                            client.BanUserRequest(index.ToString());
-                            break;
+                            }
+                            else if(message.Equals("ban")){
+                                Console.Write("Enter index of user: ");
+                                textConsole = new StringBuilder("Enter index of user: ");
+                                StringBuilder index = new StringBuilder(Console.ReadLine());
+                                client.BanUserRequest(index.ToString());
+                                goto case "chat message";
+                            }
+                            else{
+                                client.SendMessageToChannel();
+                                goto case "chat message";
+                            }
                         }
                         else{
-                            client.SendMessageToChannel();
-                            goto case "chat message";
+                            continue;
                         }
                     case "change chat":
                         Console.Write("Enter Name of Chat: ");
